@@ -18,4 +18,25 @@
 
     <string name="default_text">...</string>
 
+
+    <!-- data collect control -->
+    <string name="start_collect">Start</string>
+    <string name="data_collecting">Collecting</string>
+
+    <!-- data collect display -->
+    <string name="default_data_value">--</string>
+    <string name="acceleration_describe">加速度</string>
+    <string name="acceleration_x_describe">x轴加速度</string>
+    <string name="acceleration_y_describe">y轴加速度</string>
+    <string name="acceleration_z_describe">z轴加速度</string>
+    <string name="gyroscope_describe">角速度</string>
+    <string name="gyroscope_x_describe">x轴角速度</string>
+    <string name="gyroscope_y_describe">y轴角速度</string>
+    <string name="gyroscope_z_describe">z轴角速度</string>
+    <string name="gps_describe">GPS</string>
+    <string name="gps_longitude_describe">经度</string>
+    <string name="gps_latitude_describe">维度</string>
+
+
+
 </resources>

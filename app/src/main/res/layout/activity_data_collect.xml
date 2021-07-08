@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.hybrid.tripleldc.view.widget.DCDisplayView
+        android:id="@+id/data_display_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="10">
+    </com.hybrid.tripleldc.view.widget.DCDisplayView>
+
+    <com.hybrid.tripleldc.view.widget.DCMainControlView
+        android:id="@+id/main_control_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="1">
+    </com.hybrid.tripleldc.view.widget.DCMainControlView>
+
+</LinearLayout>

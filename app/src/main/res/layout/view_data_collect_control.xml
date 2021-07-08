@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/img_main_control_background"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:src="@drawable/drawable_royalblue_rectangle_background">
+    </ImageView>
+
+    <TextView
+        android:id="@+id/text_main_control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textSize="50dp"
+        android:textStyle="bold"
+        android:textColor="@color/darkslateblue"
+        android:fontFamily="sans-serif-black"
+        android:text="@string/start_collect">
+
+    </TextView>
+
+</FrameLayout>

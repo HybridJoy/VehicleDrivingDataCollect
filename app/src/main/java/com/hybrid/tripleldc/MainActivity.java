@@ -13,6 +13,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.hybrid.tripleldc.databinding.ActivityMainBinding;
+import com.hybrid.tripleldc.view.activity.DataCollectActivity;
 import com.hybrid.tripleldc.view.activity.GPSTestActivity;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
 
@@ -39,7 +40,7 @@ public class MainActivity extends BaseActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                startActivity(new Intent(MainActivity.this, GPSTestActivity.class));
+                startActivity(new Intent(MainActivity.this, DataCollectActivity.class));
             }
         });
     }

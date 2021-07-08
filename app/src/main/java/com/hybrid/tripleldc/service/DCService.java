@@ -48,6 +48,13 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     private DCBinder mBinder;
 
+    private DataChangeCallback dataChangeCallback;
+    public interface DataChangeCallback {
+        void onAccChanged(Acceleration acceleration);
+        void onGyroChanged(GyroAngel gyroAngel);
+        void onGPSChanged(Location location);
+    }
+
     /**
      * 加速度传感器更新回调
      *
@@ -56,6 +63,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     @Override
     public void Acceleration(Acceleration acceleration) {
         accelerations.add(acceleration);
+        dataChangeCallback.onAccChanged(acceleration);
     }
 
     /**
@@ -76,6 +84,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     @Override
     public void Gyro(GyroAngel gyro) {
         gyroAngels.add(gyro);
+        dataChangeCallback.onGyroChanged(gyro);
     }
 
     /**
@@ -86,6 +95,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     @Override
     public void UpdateLocation(Location location) {
         gpsLocations.add(location);
+        dataChangeCallback.onGPSChanged(location);
     }
 
     @Override
@@ -185,10 +195,10 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         }
 
         boolean isAcceleratorActivated = mAccelerationSensor.setSensorState(true);
-        boolean isOrientActivated = mOrientSensor.setSensorState(true);
+        // boolean isOrientActivated = mOrientSensor.setSensorState(true);
         boolean isGyroActivated = mGyroSensor.setSensorState(true);
 
-        isSensorActivated = isAcceleratorActivated && isOrientActivated && isGyroActivated;
+        isSensorActivated = isAcceleratorActivated && isGyroActivated;
         LogUtil.d(TAG, String.format("activate sensors %s, current sensor frequency: %s", isSensorActivated, sensorFrequency));
 
 
@@ -291,5 +301,9 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         mAccelerationSensor.resetFrequencyCount();
         mOrientSensor.resetFrequencyCount();
         mGyroSensor.resetFrequencyCount();
+    }
+
+    public void setDataChangeCallback(DataChangeCallback dataChangeCallback) {
+        this.dataChangeCallback = dataChangeCallback;
     }
 }
