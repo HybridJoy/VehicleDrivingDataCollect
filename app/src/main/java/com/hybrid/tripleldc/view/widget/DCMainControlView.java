@@ -4,12 +4,14 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
 import com.hybrid.tripleldc.R;
 import com.hybrid.tripleldc.databinding.ViewDataCollectControlBinding;
+import com.hybrid.tripleldc.util.ui.AnimatorUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
 
 /**
@@ -28,12 +30,21 @@ public class DCMainControlView extends LinearLayout {
 
     ViewDataCollectControlBinding binding;
 
+    private Animation mainControlTranslateAnimation;
+    private Animation mainControlResetAnimation;
+    private Animation laneChangedAppearAnimation;
+    private Animation laneChangedResetAnimation;
+
     private CollectionStatus currStatus = CollectionStatus.Stop_Collect;
 
     private ControlCallback controlCallback;
+
     public interface ControlCallback {
         boolean onDCStart();
+
         boolean onDCStop();
+
+        void onLaneChanged();
     }
 
     public enum CollectionStatus {
@@ -57,6 +68,15 @@ public class DCMainControlView extends LinearLayout {
                         controlCallback.onDCStop();
                     }
                     break;
+                case R.id.text_lane_change:
+                case R.id.img_lane_change_background:
+                    if (currStatus == CollectionStatus.Start_Collect) {
+                        // 避免多次点击
+                        enableLaneChanged(false);
+                        controlCallback.onLaneChanged();
+                    }
+                    break;
+
             }
         }
     };
@@ -84,13 +104,26 @@ public class DCMainControlView extends LinearLayout {
     private void initView(Context context) {
         binding = ViewDataCollectControlBinding.inflate(LayoutInflater.from(context), DCMainControlView.this, true);
 
+        // init animation
+        mainControlTranslateAnimation = AnimatorUtil.generateTranslateAnimation(0.0f, -0.4f, 0.0f, 0.0f, 0, 1000);
+        mainControlResetAnimation = AnimatorUtil.generateTranslateAnimation(-0.4f, 0.0f, 0.0f, 0.0f, 0, 1000);
+        laneChangedAppearAnimation = AnimatorUtil.generateAlphaAnimation(0.0f, 1.0f, 1500);
+        laneChangedResetAnimation = AnimatorUtil.generateAlphaAnimation(1.0f, 0.0f, 1500);
+
         binding.textMainControl.setOnClickListener(onClickListener);
         binding.imgMainControlBackground.setOnClickListener(onClickListener);
+        binding.textLaneChange.setOnClickListener(onClickListener);
+        binding.imgLaneChangeBackground.setOnClickListener(onClickListener);
     }
 
     public void enableMainControl(boolean enable) {
         binding.textMainControl.setEnabled(enable);
         binding.imgMainControlBackground.setEnabled(enable);
+    }
+
+    public void enableLaneChanged(boolean enable) {
+        binding.textLaneChange.setEnabled(enable);
+        binding.imgLaneChangeBackground.setEnabled(enable);
     }
 
     public void setControlCallback(ControlCallback controlCallback) {
@@ -102,12 +135,32 @@ public class DCMainControlView extends LinearLayout {
             case Start_Collect:
                 binding.textMainControl.setTextSize(30.0f);
                 binding.textMainControl.setText(R.string.data_collecting);
-                ToastUtil.showNormalToast("开始收集数据....");
+                binding.textMainControl.startAnimation(mainControlTranslateAnimation);
+                binding.imgMainControlBackground.startAnimation(mainControlTranslateAnimation);
+                // lane changed btn show
+                binding.imgLaneChangeBackground.startAnimation(laneChangedAppearAnimation);
+                binding.textLaneChange.startAnimation(laneChangedAppearAnimation);
+                binding.imgLaneChangeBackground.setVisibility(VISIBLE);
+                binding.textLaneChange.setVisibility(VISIBLE);
+
+                AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.deepskyblue, R.color.peachpuff, 1500);
+
+                ToastUtil.showNormalToast("Data Collect Start....");
                 break;
             case Stop_Collect:
                 binding.textMainControl.setTextSize(50.0f);
                 binding.textMainControl.setText(R.string.start_collect);
-                ToastUtil.showNormalToast("停止收集数据....");
+                binding.textMainControl.startAnimation(mainControlResetAnimation);
+                binding.imgMainControlBackground.startAnimation(mainControlResetAnimation);
+                // lane changed btn hide
+                binding.imgLaneChangeBackground.startAnimation(laneChangedResetAnimation);
+                binding.textLaneChange.startAnimation(laneChangedResetAnimation);
+                binding.imgLaneChangeBackground.setVisibility(GONE);
+                binding.textLaneChange.setVisibility(GONE);
+
+                AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.peachpuff, R.color.deepskyblue, 1500);
+
+                ToastUtil.showNormalToast("Data Collect End....");
                 break;
             default:
                 break;
@@ -115,4 +168,5 @@ public class DCMainControlView extends LinearLayout {
 
         currStatus = status;
     }
+
 }

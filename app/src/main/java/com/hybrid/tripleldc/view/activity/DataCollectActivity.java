@@ -83,6 +83,7 @@ public class DataCollectActivity extends BaseActivity {
             if (success) {
                 LogUtil.d(TAG, "start data collect");
                 // 更新UI
+                binding.dataDisplayArea.startFlush();
                 binding.mainControlArea.enableMainControl(true);
                 binding.mainControlArea.setControlStatus(DCMainControlView.CollectionStatus.Start_Collect);
             } else {
@@ -98,10 +99,21 @@ public class DataCollectActivity extends BaseActivity {
             LogUtil.d(TAG, "end data collect");
 
             // 更新UI
+            binding.dataDisplayArea.endFlush();
             binding.mainControlArea.enableMainControl(true);
             binding.mainControlArea.setControlStatus(DCMainControlView.CollectionStatus.Stop_Collect);
 
             return true;
+        }
+
+        @Override
+        public void onLaneChanged() {
+            // todo 添加变道数据标记操作
+
+            // test code
+            ToastUtil.showNormalToast("car lane changed");
+            // 更新UI
+            binding.mainControlArea.enableLaneChanged(true);
         }
     };
 

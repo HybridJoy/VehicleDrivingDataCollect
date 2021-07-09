@@ -141,7 +141,9 @@ public class GPSLocationManager {
                     Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
-            locationManager.removeUpdates(mGPSLocation);
+            if (mGPSLocation != null) {
+                locationManager.removeUpdates(mGPSLocation);
+            }
         }
     }
 }

@@ -219,7 +219,7 @@
         android:id="@+id/img_gps_background"
         android:layout_width="150dp"
         android:layout_height="150dp"
-        android:src="@drawable/drawable_darkkhaki_rectangle_background"
+        android:src="@drawable/drawable_orange_rectangle_background"
         android:contentDescription="@string/gps_describe"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

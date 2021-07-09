@@ -3,11 +3,15 @@ package com.hybrid.tripleldc.view.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
+import com.hybrid.tripleldc.R;
 import com.hybrid.tripleldc.databinding.ViewDataCollectDisplayBinding;
+import com.hybrid.tripleldc.util.ui.AnimatorUtil;
+import com.hybrid.tripleldc.util.ui.ToastUtil;
 
 /**
  * Author: Joy
@@ -21,6 +25,9 @@ import com.hybrid.tripleldc.databinding.ViewDataCollectDisplayBinding;
 public class DCDisplayView extends LinearLayout {
 
     private ViewDataCollectDisplayBinding binding;
+    private Animation accBreathAnimation;
+    private Animation gyroBreathAnimation;
+    private Animation gpsBreathAnimation;
 
     public DCDisplayView(Context context) {
         super(context);
@@ -44,6 +51,21 @@ public class DCDisplayView extends LinearLayout {
 
     private void initView(Context context) {
         binding = ViewDataCollectDisplayBinding.inflate(LayoutInflater.from(context), DCDisplayView.this, true);
+
+        // generate breath animation
+        accBreathAnimation = AnimatorUtil.generateScaleAnimation(0.95f, 1.05f, 0.95f, 1.05f, -1, 750);
+        gyroBreathAnimation = AnimatorUtil.generateScaleAnimation(0.95f, 1.05f, 0.95f, 1.05f, -1, 750);
+        gpsBreathAnimation = AnimatorUtil.generateScaleAnimation(0.9f, 1.1f, 0.9f, 1.1f, -1, 1500);
+    }
+
+    public void startFlush() {
+        AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.steelblue, R.color.peachpuff, 1500);
+        enableBreath(true);
+    }
+
+    public void endFlush() {
+        AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.peachpuff, R.color.steelblue, 1500);
+        enableBreath(false);
     }
 
     public void updateAcceleration(float accelerationX, float accelerationY, float accelerationZ) {
@@ -61,5 +83,19 @@ public class DCDisplayView extends LinearLayout {
     public void updateGPS(double longitude, double latitude) {
         binding.textGpsLongitude.setText(String.format("%.3f", longitude));
         binding.textGpsLatitude.setText(String.format("%.3f", latitude));
+        ToastUtil.showNormalToast(String.format("经度：%s\n维度：%s", longitude, latitude));
     }
+
+    private void enableBreath(boolean enable) {
+        if (enable) {
+            binding.imgAccelerationBackground.startAnimation(accBreathAnimation);
+            binding.imgGyroBackground.startAnimation(gyroBreathAnimation);
+            binding.imgGpsBackground.startAnimation(gpsBreathAnimation);
+        } else {
+            binding.imgAccelerationBackground.clearAnimation();
+            binding.imgGyroBackground.clearAnimation();
+            binding.imgGpsBackground.clearAnimation();
+        }
+    }
+
 }

@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="10">
+        android:layout_weight="10"
+        android:background="@color/steelblue">
     </com.hybrid.tripleldc.view.widget.DCDisplayView>
 
     <com.hybrid.tripleldc.view.widget.DCMainControlView
@@ -18,7 +19,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:background="@color/deepskyblue">
     </com.hybrid.tripleldc.view.widget.DCMainControlView>
 
 </LinearLayout>

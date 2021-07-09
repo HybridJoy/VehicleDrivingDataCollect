@@ -9,16 +9,18 @@
         android:id="@+id/toast_prefix"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:gravity="right"
-        android:textSize="20sp"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:fontFamily="serif-monospace"
         tools:text="Self:" />
 
     <TextView
         android:id="@+id/toast_message"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:gravity="left"
-        android:textSize="18sp"
+        android:gravity="center"
+        android:textSize="15sp"
+        android:fontFamily="cursive"
         tools:text="This is a toast message" />
 
 </LinearLayout>

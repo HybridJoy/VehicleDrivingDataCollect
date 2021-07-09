@@ -48,7 +48,7 @@ public class ToastUtil {
     }
 
     public static void showColorToast(String msg, Boolean isErrorMsg) {
-        showCustomToast(msg, isErrorMsg ? R.color.red : R.color.cyan, null);
+        showCustomToast(msg, isErrorMsg ? R.color.red : R.color.darkblue, null);
     }
 
     public static void showCustomToast(String msg, @ColorRes Integer textColor, @ColorRes Integer backgroundColor) {
@@ -56,11 +56,11 @@ public class ToastUtil {
             textColor = R.color.black;
         }
         if (backgroundColor == null) {
-            backgroundColor = R.color.transparent;
+            backgroundColor = R.color.white;
         }
         toastView.binding.toastMessage.setText(msg);
         toastView.binding.toastMessage.setTextColor(context.getColor(textColor));
-        toastView.binding.toastMessage.setBackgroundColor(context.getColor(backgroundColor));
+        // toastView.binding.getRoot().setBackgroundColor(context.getColor(backgroundColor));
 
         toast.setDuration(Toast.LENGTH_SHORT);
         toast.show();

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,7 +10,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:src="@drawable/drawable_royalblue_rectangle_background">
+        android:src="@drawable/drawable_royalblue_rectangle_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
     </ImageView>
 
     <TextView
@@ -16,12 +22,46 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:fontFamily="sans-serif-black"
+        android:text="@string/start_collect"
+        android:textColor="@color/darkslateblue"
         android:textSize="50dp"
         android:textStyle="bold"
-        android:textColor="@color/darkslateblue"
-        android:fontFamily="sans-serif-black"
-        android:text="@string/start_collect">
-
+        app:layout_constraintBottom_toBottomOf="@+id/img_main_control_background"
+        app:layout_constraintEnd_toEndOf="@+id/img_main_control_background"
+        app:layout_constraintStart_toStartOf="@+id/img_main_control_background"
+        app:layout_constraintTop_toTopOf="@+id/img_main_control_background">
     </TextView>
 
-</FrameLayout>
+    <ImageView
+        android:id="@+id/img_lane_change_background"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:src="@drawable/drawable_darkseagreen_rectangle_background"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.95"
+        tools:visibility="visible">
+    </ImageView>
+
+    <TextView
+        android:id="@+id/text_lane_change"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:fontFamily="monospace"
+        android:text="@string/lane_changed"
+        android:textColor="@color/darkslateblue"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/img_lane_change_background"
+        app:layout_constraintEnd_toEndOf="@+id/img_lane_change_background"
+        app:layout_constraintStart_toStartOf="@+id/img_lane_change_background"
+        app:layout_constraintTop_toTopOf="@+id/img_lane_change_background">
+    </TextView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
