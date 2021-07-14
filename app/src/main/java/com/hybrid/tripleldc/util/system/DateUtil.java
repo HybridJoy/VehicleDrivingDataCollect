@@ -63,7 +63,7 @@ public class DateUtil {
 
     public static String getCurrDateString(boolean isNeedSpace) {
         Calendar calendar = Calendar.getInstance();
-        return getDateString(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), true);
+        return getDateString(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), isNeedSpace);
     }
 
     public static String getCurrTimeString(boolean isNeedMilliSecond) {

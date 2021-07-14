@@ -47,6 +47,16 @@ public class AnimatorUtil {
         animator.start();
     }
 
+    /**
+     * 缩放动画生成
+     * @param fromXScale 开始X缩放值
+     * @param toXScale 目标X缩放值
+     * @param fromYScale 开始Y缩放值
+     * @param toYScale 目标Y缩放值
+     * @param repeatCount 重复次数 -1为无限重复
+     * @param duration 动画时长
+     * @return
+     */
     public static Animation generateScaleAnimation(float fromXScale, float toXScale, float fromYScale, float toYScale, int repeatCount, long duration) {
         Animation animation = new ScaleAnimation(fromXScale, toXScale, fromYScale, toYScale,  Animation.RELATIVE_TO_SELF, 0.5f,  Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setRepeatCount(repeatCount);
@@ -56,6 +66,16 @@ public class AnimatorUtil {
         return animation;
     }
 
+    /**
+     * 平移动画生成
+     * @param fromXValue 开始X位置
+     * @param toXValue 目标X位置
+     * @param fromYValue 开始Y位置
+     * @param toYValue 目标Y位置
+     * @param repeatCount 重复次数 -1为无限重复
+     * @param duration 动画时长
+     * @return
+     */
     public static Animation generateTranslateAnimation(float fromXValue, float toXValue, float fromYValue, float toYValue, int repeatCount, long duration) {
         TranslateAnimation animation = new TranslateAnimation(
                 Animation.RELATIVE_TO_SELF, fromXValue, Animation.RELATIVE_TO_SELF,

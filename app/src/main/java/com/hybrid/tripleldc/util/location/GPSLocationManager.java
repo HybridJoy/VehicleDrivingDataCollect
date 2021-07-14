@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
+import com.hybrid.tripleldc.util.io.LogUtil;
+
 import java.lang.ref.WeakReference;
 
 public class GPSLocationManager {
@@ -100,10 +102,15 @@ public class GPSLocationManager {
         }
         mGPSLocation = new GPSLocation(gpsLocationListener);
         isGpsEnabled = locationManager.isProviderEnabled(GPS_LOCATION_NAME);
-        if (!isGpsEnabled && this.isGuideOPenGps) {
-            openGPS();
-            return false;
+        if (!isGpsEnabled) {
+            if (this.isGuideOPenGps) {
+                openGPS();
+            } else {
+                LogUtil.e(TAG, "gps disable");
+                return false;
+            }
         }
+
         if (ActivityCompat.checkSelfPermission(mContext.get(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission
                 (mContext.get(), Manifest.permission.ACCESS_COARSE_LOCATION)

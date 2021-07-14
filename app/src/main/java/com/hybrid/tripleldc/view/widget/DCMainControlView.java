@@ -169,4 +169,9 @@ public class DCMainControlView extends LinearLayout {
         currStatus = status;
     }
 
+    public void reset() {
+        enableLaneChanged(true);
+        enableMainControl(true);
+    }
+
 }
