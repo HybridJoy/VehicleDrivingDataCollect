@@ -82,6 +82,7 @@ public class DUService extends Service {
      * @param callback
      */
     public void testServerConnect(String severUrl, Callback callback) {
+        LogUtil.i(TAG, "testServerConnect");
         if (severUrl.equals("")) {
             severUrl = SERVER_URL;
         }
@@ -95,11 +96,26 @@ public class DUService extends Service {
     }
 
     /**
+     * 获取服务器最新的时间片ID
+     * @param callback
+     */
+    public void getLatestTimeSliceID(Callback callback) {
+        LogUtil.i(TAG, "getLatestTimeSliceID");
+        Request request = new Request.Builder()
+                .url(SERVER_URL + DataConst.Request.REQUEST_GET_LATEST_TIME_SLICE_ID)
+                .tag(DataConst.RequestTag.REQUEST_GET_LATEST_TIME_SLICE_ID_TAG)
+                .build();
+        Call call = mOkHttpClient.newCall(request);
+        call.enqueue(callback);
+    }
+
+    /**
      * 上传变道数据
      * @param laneChangeInfos
      * @param callback
      */
     public void uploadLaneChangeInfo(List<LaneChangeInfo> laneChangeInfos, Callback callback) {
+        LogUtil.i(TAG, "uploadLaneChangeInfo");
         String json = gson.toJson(laneChangeInfos);
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder()

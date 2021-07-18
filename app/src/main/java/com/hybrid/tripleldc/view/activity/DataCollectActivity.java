@@ -80,7 +80,9 @@ public class DataCollectActivity extends BaseActivity {
     private static final int MsgCollectData = 1;
     private static final int IntervalCollectData = 2000;
     private static final int MsgUploadData = 2;
-    private static final int IntervalUploadData = 100000;
+    private static final int IntervalUploadData = 10000;
+    // todo bugfix: http response not close
+    private static final int MsgHttpResponseClose = 3;
 
     private Handler mainHandler = new Handler(Looper.getMainLooper()) {
         public void handleMessage(Message msg) {
@@ -104,6 +106,8 @@ public class DataCollectActivity extends BaseActivity {
                 case MsgUploadData:
                     // set workflow variable
                     isDataUploading = true;
+                    // 添加提示
+                    ToastUtil.showNormalToast("数据上传中，请勿断开网络或离开本界面");
                     mDUService.uploadLaneChangeInfo(laneChangeInfoData, httpCallback);
 
                     if (isDataCollecting) {
@@ -146,8 +150,8 @@ public class DataCollectActivity extends BaseActivity {
             DUService.DUBinder mBinder = (DUService.DUBinder) service;
             mDUService = mBinder.getService();
             if (mDUService != null) {
-                // todo
-
+                // 测试服务器连接
+                mDUService.testServerConnect("", httpCallback);
             } else {
                 LogUtil.e(TAG, "DU service lose!");
                 throw new NullPointerException();
@@ -197,8 +201,38 @@ public class DataCollectActivity extends BaseActivity {
                 public void run() {
                     String requestTag = (String) response.request().tag();
                     if (requestTag.equals(DataConst.RequestTag.REQUEST_TEST_SERVER_CONNECT_TAG)) {
+                        if (!response.isSuccessful()) {
+                            LogUtil.e(TAG, String.format("%1 failed, code: %s", response.request().url(), response.code()));
+                            // todo 返回不成功的操作
+                            return;
+                        }
                         showTipsDialog(UIConst.DialogMessage.TEST_SERVER_CONNECT_SUCCESSFUL, false);
+                        // 服务器连接成功后，对TimeSliceID进行校正
+                        mDUService.getLatestTimeSliceID(httpCallback);
+                    } else if (requestTag.equals(DataConst.RequestTag.REQUEST_GET_LATEST_TIME_SLICE_ID_TAG)) {
+                        if (!response.isSuccessful()) {
+                            LogUtil.e(TAG, String.format("%1 failed, code: %s", response.request().url(), response.code()));
+                            // todo 返回不成功的操作
+                            return;
+                        }
+                        String serverLatestTimeSliceID = null;
+                        try {
+                            serverLatestTimeSliceID = response.body().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            LogUtil.e(TAG, "parse data error");
+                            return;
+                        }
+
+                        currTimeSliceID = Long.parseLong(serverLatestTimeSliceID);
+                        ToastUtil.showNormalToast(String.format("校正时间片ID为 %s", serverLatestTimeSliceID));
                     } else if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
+                        if (!response.isSuccessful()) {
+                            LogUtil.e(TAG, String.format("%1 failed, code: %s", response.request().url(), response.code()));
+                            // todo 返回不成功的操作
+                            return;
+                        }
+
                         // 成功就重置重传计数
                         reUploadCount = 0;
 
@@ -208,6 +242,9 @@ public class DataCollectActivity extends BaseActivity {
                         laneChangeInfoData.clear();
                         laneChangeInfoData.addAll(tempLaneChangeInfoData);
                         tempLaneChangeInfoData.clear();
+
+                        // 添加提示
+                        ToastUtil.showNormalToast("数据上传成功");
 
                         LogUtil.d(TAG, "upload lane change data success");
                     }
@@ -322,7 +359,7 @@ public class DataCollectActivity extends BaseActivity {
         requestPermissions();
         initServices();
 
-        // todo currSliceID 需要先判断是不是同一天 通过服务器
+        // default init
         currTimeSliceID = TripleLDCUtil.generateTimeSliceIDOriginByDate();
     }
 
