@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.view.LayoutInflater;
+import android.view.WindowManager;
 
 import com.hybrid.tripleldc.R;
 import com.hybrid.tripleldc.bean.Acceleration;
@@ -73,8 +74,7 @@ public class DataCollectActivity extends BaseActivity {
 
     // permission request code
     private static final int PERMISSION_ACCESS_FINE_LOCATION_CODE = 1001;
-    private static final int PERMISSION_ACCESS_COARSE_LOCATION_CODE = 1002;
-    private static final int PERMISSION_ACCESS_INTERNET_CODE = 1003;
+    private static final int PERMISSION_ACCESS_BACKGROUND_LOCATION_CODE = 1002;
 
     // handler message and delay
     private static final int MsgCollectData = 1;
@@ -310,6 +310,11 @@ public class DataCollectActivity extends BaseActivity {
         LogUtil.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         binding = ActivityDataCollectBinding.inflate(LayoutInflater.from(this));
+        // 隐藏状态栏
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // 隐藏标题栏
+        getSupportActionBar().hide();
         setContentView(binding.getRoot());
 
         binding.mainControlArea.setControlCallback(controlCallback);
@@ -357,11 +362,9 @@ public class DataCollectActivity extends BaseActivity {
      */
     private void requestPermissions() {
         AppUtil.requestPermission(DataCollectActivity.this, Manifest.permission.ACCESS_FINE_LOCATION,
-                PERMISSION_ACCESS_FINE_LOCATION_CODE, "应用需要位置信息，请授予该权限");
-        AppUtil.requestPermission(DataCollectActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION,
-                PERMISSION_ACCESS_COARSE_LOCATION_CODE, "应用需要位置信息，请授予该权限");
-        AppUtil.requestPermission(DataCollectActivity.this, Manifest.permission.INTERNET,
-                PERMISSION_ACCESS_INTERNET_CODE, "应用需要访问网络资源，请授予该权限");
+                PERMISSION_ACCESS_FINE_LOCATION_CODE, "应用运行时需要精确位置信息，请授予该权限");
+        AppUtil.requestPermission(DataCollectActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                PERMISSION_ACCESS_BACKGROUND_LOCATION_CODE, "应用进入后台时同样需要位置信息，请授予该权限");
     }
 
     /**

@@ -19,6 +19,13 @@
     <string name="default_text">...</string>
 
 
+    <!-- title -->
+    <string name="main_title">Lane-Level Localization</string>
+
+    <!-- main page -->
+    <string name="data_collection">Data collection</string>
+    <string name="localization">Localization</string>
+
     <!-- data collect control -->
     <string name="start_collect">Start</string>
     <string name="data_collecting">Collecting</string>

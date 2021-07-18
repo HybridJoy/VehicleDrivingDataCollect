@@ -115,6 +115,7 @@ public class GPSLocationManager {
                 != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission
                 (mContext.get(), Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
+            LogUtil.e(TAG, "location permission is not allowed");
             return false;
         }
 

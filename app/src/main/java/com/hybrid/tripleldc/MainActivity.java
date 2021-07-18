@@ -1,27 +1,41 @@
 package com.hybrid.tripleldc;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.google.android.material.snackbar.Snackbar;
+import com.bumptech.glide.Glide;
 import com.hybrid.tripleldc.databinding.ActivityMainBinding;
+import com.hybrid.tripleldc.util.io.LogUtil;
+import com.hybrid.tripleldc.util.system.AppUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
 import com.hybrid.tripleldc.view.activity.DataCollectActivity;
-import com.hybrid.tripleldc.view.activity.GPSTestActivity;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
+import com.hybrid.tripleldc.view.widget.MainControlView;
 
 public class MainActivity extends BaseActivity {
 
-    private AppBarConfiguration appBarConfiguration;
+    private static final String TAG = "MainActivity";
+
     private ActivityMainBinding binding;
+
+    private static final int PERMISSION_READ_EXTERNAL_STORAGE_CODE = 1001;
+    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE_CODE = 1001;
+
+    private MainControlView.OperationCallback operationCallback = new MainControlView.OperationCallback() {
+        @Override
+        public void onDataCollection() {
+            LogUtil.d(TAG, "enter DataCollectActivity");
+            startActivity(new Intent(MainActivity.this, DataCollectActivity.class));
+        }
+
+        @Override
+        public void onLocalization() {
+            ToastUtil.showNormalToast("努力开发中，敬请期待！");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,20 +46,16 @@ public class MainActivity extends BaseActivity {
 
         setSupportActionBar(binding.toolbar);
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        // loading image show by random
+        int index = (int)(Math.random() * 99 + 1);
+        Glide.with(MainActivity.this)
+             .load(index < 50 ? R.drawable.vehicle_move_1 : R.drawable.vehicle_move_2)
+             .into(binding.imgShow);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                startActivity(new Intent(MainActivity.this, DataCollectActivity.class));
-            }
-        });
-
-        ToastUtil.showColorToast("hello", false);
+        // init main control callback
+        binding.mainControlArea.setOperationCallback(operationCallback);
+        
+        requestPermissions();
     }
 
     @Override
@@ -64,16 +74,20 @@ public class MainActivity extends BaseActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            ToastUtil.showNormalToast("暂无配置项！");
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+    /**
+     * 请求需要的权限
+     */
+    private void requestPermissions() {
+        AppUtil.requestPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE,
+                PERMISSION_READ_EXTERNAL_STORAGE_CODE, "应用运行时需要进行本地存储，请授予该权限");
+        AppUtil.requestPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                PERMISSION_WRITE_EXTERNAL_STORAGE_CODE, "应用运行时需要进行本地存储，请授予该权限");
     }
 }
