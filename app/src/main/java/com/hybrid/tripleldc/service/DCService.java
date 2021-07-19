@@ -14,7 +14,6 @@ import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.bean.GyroAngel;
 import com.hybrid.tripleldc.bean.Orientation;
 import com.hybrid.tripleldc.util.io.LogUtil;
-import com.hybrid.tripleldc.util.location.GPSLocation;
 import com.hybrid.tripleldc.util.location.GPSLocationListener;
 import com.hybrid.tripleldc.util.location.GPSLocationManager;
 import com.hybrid.tripleldc.util.location.GPSProviderStatus;
@@ -22,6 +21,7 @@ import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.sensor.acceleration.AccelerationSensor;
 import com.hybrid.tripleldc.util.sensor.gyroscope.GyroSensor;
 import com.hybrid.tripleldc.util.sensor.orientation.OrientSensor;
+import com.hybrid.tripleldc.util.system.DateUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,8 +48,6 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     List<GyroAngel> gyroAngels = new ArrayList<>(); // 陀螺仪数据
     List<GPSPosition> gpsPositions = new ArrayList<>(); // GPS数据
 
-    private DCBinder mBinder;
-
     private DataChangeCallback dataChangeCallback;
 
     public interface DataChangeCallback {
@@ -63,7 +61,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     /**
      * 加速度传感器更新回调
      *
-     * @param acceleration
+     * @param acceleration 加速度
      */
     @Override
     public void Acceleration(Acceleration acceleration) {
@@ -74,7 +72,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     /**
      * 方向传感器更新回调
      *
-     * @param orientation
+     * @param orientation 方向
      */
     @Override
     public void Orient(Orientation orientation) {
@@ -84,7 +82,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     /**
      * 陀螺仪更新回调
      *
-     * @param gyro
+     * @param gyro 角速度
      */
     @Override
     public void Gyro(GyroAngel gyro) {
@@ -101,7 +99,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     public void UpdateLocation(Location location) {
         // todo 这里损失了很多数据，可以作为一个优化点
         GPSPosition position = new GPSPosition(location.getLongitude(), location.getLatitude());
-        position.setTimestamp(location.getTime());
+        position.setSampleTime(DateUtil.getTimestampString(location.getTime()));
         gpsPositions.add(position);
         dataChangeCallback.onGPSChanged(position);
     }
@@ -143,10 +141,8 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        mBinder = new DCBinder();
-        return mBinder;
+        return new DCBinder();
     }
-
 
     @Override
     public void onCreate() {
@@ -202,14 +198,15 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
             endDC();
         }
 
+        // activate inertial sensor
         boolean isAcceleratorActivated = mAccelerationSensor.setSensorState(true);
-        // boolean isOrientActivated = mOrientSensor.setSensorState(true);
+        boolean isOrientActivated = mOrientSensor.setSensorState(true);
         boolean isGyroActivated = mGyroSensor.setSensorState(true);
 
-        isSensorActivated = isAcceleratorActivated && isGyroActivated;
+        isSensorActivated = isAcceleratorActivated && isGyroActivated && isOrientActivated;
         LogUtil.d(TAG, String.format("activate sensors %s, current sensor frequency: %s", isSensorActivated, sensorFrequency));
 
-
+        // activate gps
         isGPSLocationOpened = gpsLocationManager.start(this, true);
         LogUtil.d(TAG, String.format("open GPS location %s", isGPSLocationOpened));
 
@@ -220,6 +217,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
             // 启动失败要关闭已经开启的服务
             if (isSensorActivated) {
                 mAccelerationSensor.setSensorState(false);
+                mOrientSensor.setSensorState(false);
                 mGyroSensor.setSensorState(false);
             }
 
@@ -253,7 +251,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     /**
      * 获取x,y,z三轴加速度
      *
-     * @return
+     * @return 返回时间片内缓存的加速度数据
      */
 //    public List<Float[]> getAcceleration() {
 //        LogUtil.d(TAG, "accelerations size: " + accelerations.size());
@@ -271,30 +269,18 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     /**
      * 获取电子罗盘方向
      *
-     * @return
+     * @return 返回时间片内缓存的方向数据
      */
-    public List<Double[]> getOrientation() {
-        LogUtil.d(TAG, "orientations size: " + orientations.size());
-        List<Double[]> orientData = new ArrayList<>();
-        for (Orientation orient : orientations) {
-            orientData.add(orient.getValue());
-        }
-        return orientData;
+    public List<Orientation> getOrientation() {
+        LogUtil.d(TAG, "orientation size: " + orientations.size());
+        return orientations;
     }
 
     /**
      * 获取陀螺仪偏差
      *
-     * @return
+     * @return 返回时间片内缓存的角速度数据
      */
-//    public List<Float[]> getGyroAngel() {
-//        LogUtil.d(TAG, "gyroAngels size: " + gyroAngels.size());
-//        List<Float[]> gyroData = new ArrayList<>();
-//        for (GyroAngel gyro : gyroAngels) {
-//            gyroData.add(gyro.getValue());
-//        }
-//        return gyroData;
-//    }
     public List<GyroAngel> getGyroAngel() {
         LogUtil.d(TAG, "gyroAngels size: " + gyroAngels.size());
         return gyroAngels;
@@ -303,7 +289,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     /**
      * 获取GPS定位信息
      *
-     * @return
+     * @return 返回时间片内缓存的GPS数据
      */
     public List<GPSPosition> getGPSPosition() {
         LogUtil.d(TAG, "GPSPosition size: " + gpsPositions.size());

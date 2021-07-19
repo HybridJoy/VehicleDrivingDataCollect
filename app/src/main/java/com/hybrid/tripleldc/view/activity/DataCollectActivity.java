@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,10 +26,13 @@ import com.hybrid.tripleldc.service.DUService;
 import com.hybrid.tripleldc.util.TripleLDCUtil;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.system.AppUtil;
+import com.hybrid.tripleldc.util.system.DateUtil;
 import com.hybrid.tripleldc.util.ui.DialogUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
 import com.hybrid.tripleldc.view.widget.DCMainControlView;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -78,13 +82,13 @@ public class DataCollectActivity extends BaseActivity {
 
     // handler message and delay
     private static final int MsgCollectData = 1;
-    private static final int IntervalCollectData = 2000;
+    private static final int IntervalCollectData = 5000;
     private static final int MsgUploadData = 2;
-    private static final int IntervalUploadData = 10000;
+    private static final int IntervalUploadData = 20000;
     // todo bugfix: http response not close
-    private static final int MsgHttpResponseClose = 3;
+    // private static final int MsgHttpResponseClose = 3;
 
-    private Handler mainHandler = new Handler(Looper.getMainLooper()) {
+    private final Handler mainHandler = new Handler(Looper.getMainLooper()) {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MsgCollectData:
@@ -98,7 +102,7 @@ public class DataCollectActivity extends BaseActivity {
                     // 如果仍然在进行数据采集
                     if (isDataCollecting) {
                         // 加入缓存后生成下一次的数据载体
-                        currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, IntervalCollectData);
+                        currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
                         // 下一次收集数据的时间
                         mainHandler.sendEmptyMessageDelayed(MsgCollectData, IntervalCollectData);
                     }
@@ -123,7 +127,7 @@ public class DataCollectActivity extends BaseActivity {
     };
 
     // data collect service connection
-    private ServiceConnection mDCServiceConnection = new ServiceConnection() {
+    private final ServiceConnection mDCServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             DCService.DCBinder mBinder = (DCService.DCBinder) service;
@@ -144,7 +148,7 @@ public class DataCollectActivity extends BaseActivity {
     };
 
     // data upload service connection
-    private ServiceConnection mDUServiceConnection = new ServiceConnection() {
+    private final ServiceConnection mDUServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             DUService.DUBinder mBinder = (DUService.DUBinder) service;
@@ -168,92 +172,89 @@ public class DataCollectActivity extends BaseActivity {
     /**
      * 网络请求回调在这里处理
      */
-    private Callback httpCallback = new Callback() {
+    private final Callback httpCallback = new Callback() {
         @Override
-        public void onFailure(final Call call, final IOException e) {
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    String requestTag = (String) call.request().tag();
-                    if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
-                        LogUtil.e(TAG, String.format("data upload failed, retry: %d", ++reUploadCount));
-                        // 数据重传机制
-                        // isDataUploading一直为true,新到数据持续写入 tempLaneChangeInfoData
-                        if (reUploadCount < Max_Re_Upload_Times) {
-                            mDUService.uploadLaneChangeInfo(laneChangeInfoData, httpCallback);
-                        } else {
-                            // todo 写本地数据库操作
-
-                            LogUtil.e(TAG, String.format("retry time reach to max(%d), write to local DB", Max_Re_Upload_Times));
-                        }
+        public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
+            mainHandler.post(() -> {
+                String requestTag = (String) call.request().tag();
+                if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
+                    LogUtil.e(TAG, String.format("data upload failed, retry: %d", ++reUploadCount));
+                    // 数据重传机制
+                    // isDataUploading一直为true,新到数据持续写入 tempLaneChangeInfoData
+                    if (reUploadCount < Max_Re_Upload_Times) {
+                        mDUService.uploadLaneChangeInfo(laneChangeInfoData, httpCallback);
                     } else {
-                        // 默认显示错误消息
-                        showTipsDialog(e.getMessage(), true);
+                        // todo 写本地数据库操作
+
+                        LogUtil.e(TAG, String.format("retry time reach to max(%d), write to local DB", Max_Re_Upload_Times));
                     }
+                } else {
+                    // 默认显示错误消息
+                    showTipsDialog(e.getMessage(), true);
                 }
             });
         }
 
         @Override
-        public void onResponse(Call call, final Response response) throws IOException {
-            mainHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    String requestTag = (String) response.request().tag();
-                    if (requestTag.equals(DataConst.RequestTag.REQUEST_TEST_SERVER_CONNECT_TAG)) {
-                        if (!response.isSuccessful()) {
-                            LogUtil.e(TAG, String.format("%1 failed, code: %s", response.request().url(), response.code()));
-                            // todo 返回不成功的操作
-                            return;
-                        }
-                        showTipsDialog(UIConst.DialogMessage.TEST_SERVER_CONNECT_SUCCESSFUL, false);
-                        // 服务器连接成功后，对TimeSliceID进行校正
-                        mDUService.getLatestTimeSliceID(httpCallback);
-                    } else if (requestTag.equals(DataConst.RequestTag.REQUEST_GET_LATEST_TIME_SLICE_ID_TAG)) {
-                        if (!response.isSuccessful()) {
-                            LogUtil.e(TAG, String.format("%1 failed, code: %s", response.request().url(), response.code()));
-                            // todo 返回不成功的操作
-                            return;
-                        }
-                        String serverLatestTimeSliceID = null;
-                        try {
-                            serverLatestTimeSliceID = response.body().string();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            LogUtil.e(TAG, "parse data error");
-                            return;
-                        }
-
+        public void onResponse(@NotNull Call call, @NotNull final Response response) throws IOException {
+            mainHandler.post(() -> {
+                String requestTag = (String) response.request().tag();
+                if (requestTag.equals(DataConst.RequestTag.REQUEST_TEST_SERVER_CONNECT_TAG)) {
+                    if (!response.isSuccessful()) {
+                        LogUtil.e(TAG, String.format("%s failed, code: %s", response.request().url(), response.code()));
+                        // todo 返回不成功的操作
+                        return;
+                    }
+                    showTipsDialog(UIConst.DialogMessage.TEST_SERVER_CONNECT_SUCCESSFUL, false);
+                    // 服务器连接成功后，对TimeSliceID进行校正
+                    mDUService.getLatestTimeSliceID(httpCallback);
+                } else if (requestTag.equals(DataConst.RequestTag.REQUEST_GET_LATEST_TIME_SLICE_ID_TAG)) {
+                    if (!response.isSuccessful()) {
+                        LogUtil.e(TAG, String.format("%s failed, code: %s", response.request().url(), response.code()));
+                        // todo 返回不成功的操作
+                        return;
+                    }
+                    String serverLatestTimeSliceID;
+                    try {
+                        serverLatestTimeSliceID = response.body().string();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        LogUtil.e(TAG, "parse data error");
+                        return;
+                    }
+                    if (serverLatestTimeSliceID.equals("0")) {
+                        ToastUtil.showNormalToast(String.format("服务器时间无效，无须校正，当前时间片ID为 %s", currTimeSliceID));
+                    } else {
                         currTimeSliceID = Long.parseLong(serverLatestTimeSliceID);
                         ToastUtil.showNormalToast(String.format("校正时间片ID为 %s", serverLatestTimeSliceID));
-                    } else if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
-                        if (!response.isSuccessful()) {
-                            LogUtil.e(TAG, String.format("%1 failed, code: %s", response.request().url(), response.code()));
-                            // todo 返回不成功的操作
-                            return;
-                        }
-
-                        // 成功就重置重传计数
-                        reUploadCount = 0;
-
-                        // 数据上传成功的逻辑
-                        // set workflow variable
-                        isDataUploading = false;
-                        laneChangeInfoData.clear();
-                        laneChangeInfoData.addAll(tempLaneChangeInfoData);
-                        tempLaneChangeInfoData.clear();
-
-                        // 添加提示
-                        ToastUtil.showNormalToast("数据上传成功");
-
-                        LogUtil.d(TAG, "upload lane change data success");
                     }
+                } else if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
+                    if (!response.isSuccessful()) {
+                        LogUtil.e(TAG, String.format("%s failed, code: %s", response.request().url(), response.code()));
+                        // todo 返回不成功的操作
+                        return;
+                    }
+
+                    // 成功就重置重传计数
+                    reUploadCount = 0;
+
+                    // 数据上传成功的逻辑
+                    // set workflow variable
+                    isDataUploading = false;
+                    laneChangeInfoData.clear();
+                    laneChangeInfoData.addAll(tempLaneChangeInfoData);
+                    tempLaneChangeInfoData.clear();
+
+                    // 添加提示
+                    ToastUtil.showNormalToast("数据上传成功");
+
+                    LogUtil.d(TAG, "upload lane change data success");
                 }
             });
         }
     };
 
-    private DCService.DataChangeCallback dataChangeCallback = new DCService.DataChangeCallback() {
+    private final DCService.DataChangeCallback dataChangeCallback = new DCService.DataChangeCallback() {
         @Override
         public void onAccChanged(Acceleration acceleration) {
             // LogUtil.d(TAG, "onAccChanged");
@@ -273,7 +274,7 @@ public class DataCollectActivity extends BaseActivity {
         }
     };
 
-    private DCMainControlView.ControlCallback controlCallback = new DCMainControlView.ControlCallback() {
+    private final DCMainControlView.ControlCallback controlCallback = new DCMainControlView.ControlCallback() {
         @Override
         public boolean onDCStart() {
             boolean success = mDCService.startDC();
@@ -291,7 +292,7 @@ public class DataCollectActivity extends BaseActivity {
                 }
 
                 // 生成数据载体
-                currLaneChangeInfo = new LaneChangeInfo(currTimeSliceID, IntervalCollectData);
+                currLaneChangeInfo = new LaneChangeInfo(currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
                 // 生成数据采集消息
                 mainHandler.sendEmptyMessageDelayed(MsgCollectData, IntervalCollectData);
                 // 生成数据上传消息
@@ -333,9 +334,11 @@ public class DataCollectActivity extends BaseActivity {
 
         @Override
         public void onLaneChanged() {
+            // todo 区分变道类型
             // 变道标记
             currLaneChangeInfo.setLaneChanged(true);
-            currLaneChangeInfo.setLaneChangedTimestamp(System.currentTimeMillis());
+            currLaneChangeInfo.setLaneChangedType(0);
+            currLaneChangeInfo.setLaneChangedTime(DateUtil.getTimestampString(System.currentTimeMillis()));
 
             // 更新UI
             binding.mainControlArea.enableLaneChanged(true);
@@ -351,7 +354,13 @@ public class DataCollectActivity extends BaseActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         // 隐藏标题栏
-        getSupportActionBar().hide();
+        try {
+            getSupportActionBar().hide();
+        } catch (NullPointerException e) {
+            LogUtil.e(TAG, "hide action bar failed");
+            e.printStackTrace();
+        }
+
         setContentView(binding.getRoot());
 
         binding.mainControlArea.setControlCallback(controlCallback);
@@ -388,7 +397,9 @@ public class DataCollectActivity extends BaseActivity {
     private void loadData() {
         currLaneChangeInfo.setAccelerationData(mDCService.getAcceleration());
         currLaneChangeInfo.setGyroAngelData(mDCService.getGyroAngel());
+        currLaneChangeInfo.setOrientationData(mDCService.getOrientation());
         currLaneChangeInfo.setGpsPositionData(mDCService.getGPSPosition());
+        currLaneChangeInfo.setEndTime(DateUtil.getTimestampString(System.currentTimeMillis()));
 
         // 数据装载完毕后，清空缓存
         mDCService.resetSensorData();
@@ -400,8 +411,10 @@ public class DataCollectActivity extends BaseActivity {
     private void requestPermissions() {
         AppUtil.requestPermission(DataCollectActivity.this, Manifest.permission.ACCESS_FINE_LOCATION,
                 PERMISSION_ACCESS_FINE_LOCATION_CODE, "应用运行时需要精确位置信息，请授予该权限");
-        AppUtil.requestPermission(DataCollectActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                PERMISSION_ACCESS_BACKGROUND_LOCATION_CODE, "应用进入后台时同样需要位置信息，请授予该权限");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            AppUtil.requestPermission(DataCollectActivity.this, Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    PERMISSION_ACCESS_BACKGROUND_LOCATION_CODE, "应用进入后台时同样需要位置信息，请授予该权限");
+        }
     }
 
     /**

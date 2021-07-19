@@ -16,20 +16,39 @@ public class LaneChangeInfo {
     private long timeSliceID;
     // 时间片大小
     private int timeSliceInterval;
+    // 开始时间
+    private String startTime;
+    // 结束时间
+    private String endTime;
     // 时间片内是否变道
     private boolean isLaneChanged = false;
     // 变道时间
-    private long laneChangedTimestamp;
+    private String laneChangedTime;
+    // 变道类型 1 左变道 2 右变道 0 无变道类型数据
+    private int laneChangedType = 0;
     // 时间片内的加速度读数
     private List<Acceleration> accelerationData;
     // 时间片内的角速度读数
     private List<GyroAngel> gyroAngelData;
+    // 时间片内的方向读数
+    private List<Orientation> orientationData;
     // 时间片内的GPS读数
     private List<GPSPosition> gpsPositionData;
 
-    public LaneChangeInfo(long timeSliceID, int timeSliceInterval) {
+    // 数据库字段
+    private int accelerationStartID;
+    private int accelerationEndID;
+    private int gyroangelStartID;
+    private int gyroangelEndID;
+    private int orientationStartID;
+    private int orientationEndID;
+    private int gpsPositionStartID;
+    private int gpsPositionEndID;
+
+    public LaneChangeInfo(long timeSliceID, int timeSliceInterval, String startTime) {
         this.timeSliceID = timeSliceID;
         this.timeSliceInterval = timeSliceInterval;
+        this.startTime = startTime;
     }
 
     public long getTimeSliceID() {
@@ -48,6 +67,22 @@ public class LaneChangeInfo {
         this.timeSliceInterval = timeSliceInterval;
     }
 
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
     public boolean isLaneChanged() {
         return isLaneChanged;
     }
@@ -56,12 +91,20 @@ public class LaneChangeInfo {
         isLaneChanged = laneChanged;
     }
 
-    public long getLaneChangedTimestamp() {
-        return laneChangedTimestamp;
+    public String getLaneChangedTime() {
+        return laneChangedTime;
     }
 
-    public void setLaneChangedTimestamp(long laneChangedTimestamp) {
-        this.laneChangedTimestamp = laneChangedTimestamp;
+    public void setLaneChangedTime(String laneChangedTime) {
+        this.laneChangedTime = laneChangedTime;
+    }
+
+    public int getLaneChangedType() {
+        return laneChangedType;
+    }
+
+    public void setLaneChangedType(int laneChangedType) {
+        this.laneChangedType = laneChangedType;
     }
 
     public List<Acceleration> getAccelerationData() {
@@ -80,11 +123,83 @@ public class LaneChangeInfo {
         this.gyroAngelData = gyroAngelData;
     }
 
+    public List<Orientation> getOrientationData() {
+        return orientationData;
+    }
+
+    public void setOrientationData(List<Orientation> orientationData) {
+        this.orientationData = orientationData;
+    }
+
     public List<GPSPosition> getGpsPositionData() {
         return gpsPositionData;
     }
 
     public void setGpsPositionData(List<GPSPosition> gpsPositionData) {
         this.gpsPositionData = gpsPositionData;
+    }
+
+    public int getAccelerationStartID() {
+        return accelerationStartID;
+    }
+
+    public void setAccelerationStartID(int accelerationStartID) {
+        this.accelerationStartID = accelerationStartID;
+    }
+
+    public int getAccelerationEndID() {
+        return accelerationEndID;
+    }
+
+    public void setAccelerationEndID(int accelerationEndID) {
+        this.accelerationEndID = accelerationEndID;
+    }
+
+    public int getGyroangelStartID() {
+        return gyroangelStartID;
+    }
+
+    public void setGyroangelStartID(int gyroangelStartID) {
+        this.gyroangelStartID = gyroangelStartID;
+    }
+
+    public int getGyroangelEndID() {
+        return gyroangelEndID;
+    }
+
+    public void setGyroangelEndID(int gyroangelEndID) {
+        this.gyroangelEndID = gyroangelEndID;
+    }
+
+    public int getOrientationStartID() {
+        return orientationStartID;
+    }
+
+    public void setOrientationStartID(int orientationStartID) {
+        this.orientationStartID = orientationStartID;
+    }
+
+    public int getOrientationEndID() {
+        return orientationEndID;
+    }
+
+    public void setOrientationEndID(int orientationEndID) {
+        this.orientationEndID = orientationEndID;
+    }
+
+    public int getGpsPositionStartID() {
+        return gpsPositionStartID;
+    }
+
+    public void setGpsPositionStartID(int gpsPositionStartID) {
+        this.gpsPositionStartID = gpsPositionStartID;
+    }
+
+    public int getGpsPositionEndID() {
+        return gpsPositionEndID;
+    }
+
+    public void setGpsPositionEndID(int gpsPositionEndID) {
+        this.gpsPositionEndID = gpsPositionEndID;
     }
 }

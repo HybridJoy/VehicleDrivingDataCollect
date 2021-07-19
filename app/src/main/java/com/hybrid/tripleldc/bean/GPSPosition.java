@@ -1,5 +1,6 @@
 package com.hybrid.tripleldc.bean;
 
+
 /**
  * Author: Joy
  * Created Time: 2021/7/14-10:40
@@ -10,16 +11,25 @@ package com.hybrid.tripleldc.bean;
  * Describe:
  */
 public class GPSPosition {
+    private int id;
     // 经度
     private double longitude;
     // 维度
     private double latitude;
     // 时间戳
-    private long timestamp;
+    private String sampleTime;
 
     public GPSPosition(double longitude, double latitude) {
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public double getLongitude() {
@@ -38,11 +48,11 @@ public class GPSPosition {
         this.latitude = latitude;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public String getSampleTime() {
+        return sampleTime;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public void setSampleTime(String sampleTime) {
+        this.sampleTime = sampleTime;
     }
 }

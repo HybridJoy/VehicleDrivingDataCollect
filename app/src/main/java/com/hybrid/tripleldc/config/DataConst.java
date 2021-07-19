@@ -4,7 +4,7 @@ public class DataConst {
 
     public static class OkHttpConfig {
         public static String ALIYUN_SERVER_SEVER_URL = "http://47.112.138.173:20558";
-        public static String LOCAL_SERVER_URL = "http://192.168.21.202:20558";
+        public static String LOCAL_SERVER_URL = "http://192.168.21.202:31952";
 
         // 在此配置服务器URL
         public static String SERVER_URL = LOCAL_SERVER_URL;

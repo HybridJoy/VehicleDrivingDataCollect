@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.hybrid.tripleldc.bean.Orientation;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
+import com.hybrid.tripleldc.util.system.DateUtil;
 
 
 /**
@@ -114,7 +115,7 @@ public class OrientSensor extends BaseSensor {
 
         Orientation orientation = new Orientation(orientValues);
         orientation.setTag(tag);
-        orientation.setTimestamp(System.currentTimeMillis());
+        orientation.setSampleTime(DateUtil.getTimestampString(System.currentTimeMillis()));
         orientCallBack.Orient(orientation);
     }
 }

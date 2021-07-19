@@ -8,6 +8,7 @@ import android.hardware.SensorManager;
 import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
+import com.hybrid.tripleldc.util.system.DateUtil;
 
 
 public class AccelerationSensor extends BaseSensor {
@@ -40,7 +41,7 @@ public class AccelerationSensor extends BaseSensor {
             // values[2]  z方向加速度
             accelerationValues = event.values.clone();
             Acceleration acceleration = new Acceleration(accelerationValues);
-            acceleration.setTimestamp(System.currentTimeMillis());
+            acceleration.setSampleTime(DateUtil.getTimestampString(System.currentTimeMillis()));
             accelerationCallback.Acceleration(acceleration);
         }
     }

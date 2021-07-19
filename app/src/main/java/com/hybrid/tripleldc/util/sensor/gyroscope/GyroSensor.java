@@ -12,6 +12,7 @@ import androidx.annotation.RequiresApi;
 
 import com.hybrid.tripleldc.bean.GyroAngel;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
+import com.hybrid.tripleldc.util.system.DateUtil;
 
 
 public class GyroSensor extends BaseSensor {
@@ -84,7 +85,7 @@ public class GyroSensor extends BaseSensor {
                 }
 
                 GyroAngel gyroAngel = new GyroAngel(angleXYZ);
-                gyroAngel.setTimestamp(System.currentTimeMillis());
+                gyroAngel.setSampleTime(DateUtil.getTimestampString(System.currentTimeMillis()));
                 gyroCallBack.Gyro(gyroAngel);
             }
             timestamp = event.timestamp;

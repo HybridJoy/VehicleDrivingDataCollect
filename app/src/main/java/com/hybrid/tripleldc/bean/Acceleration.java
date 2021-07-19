@@ -1,14 +1,16 @@
 package com.hybrid.tripleldc.bean;
 
+
 /**
  * Author: Tasun
  * Time: 2020/8/7-20:09:25
  */
 public class Acceleration {
+    private int id;
     private float xComponent;
     private float yComponent;
     private float zComponent;
-    private long timestamp;
+    private String sampleTime;
 
     public Acceleration() {
 
@@ -38,6 +40,14 @@ public class Acceleration {
         return new Float[]{truncation(xComponent), truncation(yComponent), truncation(zComponent)};
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public float getXComponent() {
         return xComponent;
     }
@@ -62,12 +72,12 @@ public class Acceleration {
         this.zComponent = zComponent;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public String getSampleTime() {
+        return sampleTime;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public void setSampleTime(String sampleTime) {
+        this.sampleTime = sampleTime;
     }
 
     public float truncation(float a) {
@@ -80,7 +90,7 @@ public class Acceleration {
                 "xComponent=" + xComponent +
                 ", yComponent=" + yComponent +
                 ", zComponent=" + zComponent +
-                ", timestamp=" + timestamp +
+                ", sampleTime=" + sampleTime +
                 '}';
     }
 

@@ -1,9 +1,12 @@
 package com.hybrid.tripleldc.util.system;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class DateUtil {
     private static final String TAG = "DateUtil";
+
+    private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     public static String getDateString(int year, int month, int day, boolean isNeedSpace) {
         String monthStr = String.valueOf(month + 1);
@@ -81,5 +84,9 @@ public class DateUtil {
 
     public static String getCurrDateAndTimeString(boolean isNeedSpace, boolean isNeedMilliSecond) {
         return String.format("%s %s", getCurrDateString(isNeedSpace), getCurrTimeString(isNeedMilliSecond));
+    }
+
+    public static String getTimestampString(long timestamp) {
+        return df.format(timestamp);
     }
 }
