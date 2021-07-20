@@ -1,12 +1,14 @@
 package com.hybrid.tripleldc.util.system;
 
+import com.hybrid.tripleldc.config.DataConst;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class DateUtil {
     private static final String TAG = "DateUtil";
 
-    private static final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final SimpleDateFormat df = new SimpleDateFormat(DataConst.System.TIME_FORMAT);
 
     public static String getDateString(int year, int month, int day, boolean isNeedSpace) {
         String monthStr = String.valueOf(month + 1);

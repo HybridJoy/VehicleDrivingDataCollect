@@ -39,11 +39,17 @@ public class DataConst {
         public static String REQUEST_TEST_SERVER_CONNECT = REQUEST_PREFIX + "/LinkCheck";
         public static String REQUEST_UPLOAD_LANE_CHANGE_INFO = REQUEST_PREFIX + "/LaneChangeInfoUpload";
         public static String REQUEST_GET_LATEST_TIME_SLICE_ID = REQUEST_PREFIX + "/LatestTimeSliceIDGet";
+        public static String REQUEST_UPLOAD_GYRO_TEST= REQUEST_PREFIX + "/TestGyroUpload";
 
     }
 
     public static class Device {
         public static String DEVICE_NAME_PREFIX = "device_";
         public static int DEVICE_NAME_LENGTH = 20;
+    }
+
+    public static class System {
+        // 和 spring.gson.date-format (详见application.properties) 一致
+        public static final String TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     }
 }

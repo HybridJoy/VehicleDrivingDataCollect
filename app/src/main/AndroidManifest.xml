@@ -43,6 +43,11 @@
             android:launchMode="singleTask">
         </activity>
 
+        <activity
+            android:name=".view.activity.TestActivity"
+            android:launchMode="singleTask">
+        </activity>
+
         <service
             android:name=".service.DCService"
             android:enabled="true"

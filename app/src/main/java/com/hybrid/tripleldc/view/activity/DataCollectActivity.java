@@ -95,6 +95,7 @@ public class DataCollectActivity extends BaseActivity {
                     loadData();
                     if (isDataUploading) {
                         tempLaneChangeInfoData.add(currLaneChangeInfo);
+                        LogUtil.d(TAG, String.format("data uploading, data add in temp, temp size: %s", tempLaneChangeInfoData.size()));
                     } else {
                         laneChangeInfoData.add(currLaneChangeInfo);
                     }
@@ -225,8 +226,13 @@ public class DataCollectActivity extends BaseActivity {
                     if (serverLatestTimeSliceID.equals("0")) {
                         ToastUtil.showNormalToast(String.format("服务器时间无效，无须校正，当前时间片ID为 %s", currTimeSliceID));
                     } else {
-                        currTimeSliceID = Long.parseLong(serverLatestTimeSliceID);
-                        ToastUtil.showNormalToast(String.format("校正时间片ID为 %s", serverLatestTimeSliceID));
+                        long serverLatestTimeSliceIDLong = Long.parseLong(serverLatestTimeSliceID);
+                        if (serverLatestTimeSliceIDLong / 10000 == currTimeSliceID / 10000) {
+                            currTimeSliceID = Long.parseLong(serverLatestTimeSliceID);
+                            ToastUtil.showNormalToast(String.format("校正时间片ID为 %s", serverLatestTimeSliceID));
+                        } else {
+                            ToastUtil.showNormalToast(String.format("服务器最新数据采集时间 %s", serverLatestTimeSliceIDLong / 10000));
+                        }
                     }
                 } else if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
                     if (!response.isSuccessful()) {
@@ -243,12 +249,12 @@ public class DataCollectActivity extends BaseActivity {
                     isDataUploading = false;
                     laneChangeInfoData.clear();
                     laneChangeInfoData.addAll(tempLaneChangeInfoData);
-                    tempLaneChangeInfoData.clear();
+                    tempLaneChangeInfoData = new ArrayList<>();
 
                     // 添加提示
                     ToastUtil.showNormalToast("数据上传成功");
 
-                    LogUtil.d(TAG, "upload lane change data success");
+                    LogUtil.d(TAG, String.format("upload lane change data success, get temp data (%s)", laneChangeInfoData.size()));
                 }
             });
         }
@@ -292,7 +298,7 @@ public class DataCollectActivity extends BaseActivity {
                 }
 
                 // 生成数据载体
-                currLaneChangeInfo = new LaneChangeInfo(currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
+                currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
                 // 生成数据采集消息
                 mainHandler.sendEmptyMessageDelayed(MsgCollectData, IntervalCollectData);
                 // 生成数据上传消息

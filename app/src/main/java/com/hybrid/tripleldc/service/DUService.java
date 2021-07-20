@@ -8,6 +8,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.hybrid.tripleldc.bean.GyroAngel;
 import com.hybrid.tripleldc.bean.LaneChangeInfo;
 import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.util.io.LogUtil;
@@ -122,6 +123,23 @@ public class DUService extends Service {
                 .url(SERVER_URL + DataConst.Request.REQUEST_UPLOAD_LANE_CHANGE_INFO)
                 .post(body)
                 .tag(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)
+                .build();
+        Call call = mOkHttpClient.newCall(request);
+        call.enqueue(callback);
+    }
+
+    /**
+     * 测试用接口
+     * @param gyroAngels
+     * @param callback
+     */
+    public void uploadGyroTest(List<GyroAngel> gyroAngels, Callback callback) {
+        LogUtil.i(TAG, "uploadGyroTest");
+        String json = gson.toJson(gyroAngels);
+        RequestBody body = RequestBody.create(JSON, json);
+        Request request = new Request.Builder()
+                .url(SERVER_URL + DataConst.Request.REQUEST_UPLOAD_GYRO_TEST)
+                .post(body)
                 .build();
         Call call = mOkHttpClient.newCall(request);
         call.enqueue(callback);

@@ -66,7 +66,9 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     @Override
     public void Acceleration(Acceleration acceleration) {
         accelerations.add(acceleration);
-        dataChangeCallback.onAccChanged(acceleration);
+        if (dataChangeCallback != null) {
+            dataChangeCallback.onAccChanged(acceleration);
+        }
     }
 
     /**
@@ -87,7 +89,9 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     @Override
     public void Gyro(GyroAngel gyro) {
         gyroAngels.add(gyro);
-        dataChangeCallback.onGyroChanged(gyro);
+        if (dataChangeCallback != null) {
+            dataChangeCallback.onGyroChanged(gyro);
+        }
     }
 
     /**
@@ -101,7 +105,9 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         GPSPosition position = new GPSPosition(location.getLongitude(), location.getLatitude());
         position.setSampleTime(DateUtil.getTimestampString(location.getTime()));
         gpsPositions.add(position);
-        dataChangeCallback.onGPSChanged(position);
+        if (dataChangeCallback != null) {
+            dataChangeCallback.onGPSChanged(position);
+        }
     }
 
     @Override
@@ -243,7 +249,8 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         isSensorActivated = false;
         isGPSLocationOpened = false;
 
-        resetSensorData();
+        // 装载完数据后会清空数据，这里暂时不清空数据了
+        // resetSensorData();
 
         LogUtil.d(TAG, "Data Collection end!");
     }
@@ -314,13 +321,14 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      * 重置传感器数据
      */
     public void resetSensorData() {
+        // 把 clear() 改为 new ArrayList<>() 解决浅拷贝问题
         // inertial sensors data clear
-        accelerations.clear();
-        orientations.clear();
-        gyroAngels.clear();
+        accelerations = new ArrayList<>();
+        orientations = new ArrayList<>();
+        gyroAngels = new ArrayList<>();
 
         // GPS sensor data clear
-        gpsPositions.clear();
+        gpsPositions = new ArrayList<>();
 
         // reset frequency control count
         mAccelerationSensor.resetFrequencyCount();
