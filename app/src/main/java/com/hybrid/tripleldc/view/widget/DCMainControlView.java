@@ -45,6 +45,8 @@ public class DCMainControlView extends LinearLayout {
         boolean onDCStop();
 
         void onLaneChanged(boolean isLeftChange);
+
+        void onConfigShow();
     }
 
     public enum CollectionStatus {
@@ -88,6 +90,21 @@ public class DCMainControlView extends LinearLayout {
         }
     };
 
+    private OnLongClickListener onLongClickListener = new OnLongClickListener() {
+        @Override
+        public boolean onLongClick(View v) {
+            switch (v.getId()) {
+                case R.id.text_main_control:
+                case R.id.img_main_control_background:
+                    if (currStatus == CollectionStatus.Stop_Collect) {
+                        controlCallback.onConfigShow();
+                    }
+                    return true;
+            }
+            return false;
+        }
+    };
+
     public DCMainControlView(Context context) {
         super(context);
         initView(context);
@@ -123,6 +140,9 @@ public class DCMainControlView extends LinearLayout {
         binding.imgLeftLaneChangeBackground.setOnClickListener(onClickListener);
         binding.textRightLaneChange.setOnClickListener(onClickListener);
         binding.imgRightLaneChangeBackground.setOnClickListener(onClickListener);
+
+        binding.textMainControl.setOnLongClickListener(onLongClickListener);
+        binding.imgMainControlBackground.setOnLongClickListener(onLongClickListener);
     }
 
     public void enableMainControl(boolean enable) {

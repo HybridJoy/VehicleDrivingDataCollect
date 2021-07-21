@@ -311,6 +311,14 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     }
 
     /**
+     * 获取传感器频率
+     * @return 传感器频率
+     */
+    public int getSensorFrequency() {
+        return this.sensorFrequency;
+    }
+
+    /**
      * 配置传感器频率
      *
      * @param frequency 在已有频率基础上的缩小倍数

@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.hybrid.tripleldc.bean.Acceleration;
+import com.hybrid.tripleldc.bean.DataCollectConfig;
 import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.bean.GyroAngel;
 import com.hybrid.tripleldc.bean.LaneChangeInfo;
@@ -50,10 +51,12 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
 
     // DataUpload
     private DUService dataUploadService;
+    private boolean isNeedUploadData = true;
     private boolean isDataUploading = false;
     private int reUploadCount;
+    private int maxReUploadTimes = Default_Max_Re_Upload_Times;
     // 最大重传次数
-    private static final int Max_Re_Upload_Times = 1000;
+    private static final int Default_Max_Re_Upload_Times = 1000;
 
     // UI Thread Handler
     private final Handler uiThreadHandler;
@@ -64,15 +67,19 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
         ToastMessage,
         AccUpdate,
         GyroUpdate,
-        GpsUpdate
+        GpsUpdate,
+        ConfigShow
     }
 
     private Handler dataProcessHandler;
+    private int intervalCollectData = DefaultIntervalCollectData;
+    private int intervalUploadData = DefaultIntervalUploadData;
+
     // data process handler message and delay
     private static final int MsgCollectData = 1;
-    private static final int IntervalCollectData = 5000;
+    private static final int DefaultIntervalCollectData = 5000;
     private static final int MsgUploadData = 2;
-    private static final int IntervalUploadData = 20000;
+    private static final int DefaultIntervalUploadData = 20000;
 
     public DataCollectControl(Handler mainThreadHandler) {
         this.uiThreadHandler = mainThreadHandler;
@@ -103,13 +110,13 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
             LogUtil.e(TAG, String.format("data upload failed, retry: %d", ++reUploadCount));
             // 数据重传机制
             // isDataUploading一直为true,新到数据持续写入 tempLaneChangeInfoData
-            if (reUploadCount < Max_Re_Upload_Times) {
+            if (reUploadCount < maxReUploadTimes) {
                 notifyUIUpdate(NotifyType.ToastMessage, String.format("数据上传失败，重试(%s)", reUploadCount));
                 dataUploadService.uploadLaneChangeInfo(laneChangeInfoData, DataCollectControl.this);
             } else {
                 // todo 写本地数据库操作
 
-                LogUtil.e(TAG, String.format("retry time reach to max(%d), write to local DB", Max_Re_Upload_Times));
+                LogUtil.e(TAG, String.format("retry time reach to max(%d), write to local DB", maxReUploadTimes));
             }
         } else {
             // 默认显示错误消息
@@ -199,6 +206,8 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
         }
         dataCollectService.enableService(true);
         dataCollectService.setDataChangeCallback(DataCollectControl.this);
+
+        checkServiceSituation();
     }
 
     /**
@@ -211,6 +220,8 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
         }
         dataUploadService.enableService(true);
         dataUploadService.testServerConnect("", DataCollectControl.this);
+
+        checkServiceSituation();
     }
 
     /**
@@ -234,12 +245,12 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
             }
 
             // 生成数据载体
-            currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
+            currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, intervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
             // 生成数据采集消息
-            dataProcessHandler.sendEmptyMessageDelayed(MsgCollectData, IntervalCollectData);
+            dataProcessHandler.sendEmptyMessageDelayed(MsgCollectData, intervalCollectData);
             // 生成数据上传消息
-            if (!dataProcessHandler.hasMessages(MsgUploadData)) {
-                dataProcessHandler.sendEmptyMessageDelayed(MsgUploadData, IntervalUploadData);
+            if (isNeedUploadData && !dataProcessHandler.hasMessages(MsgUploadData)) { // 需要上传数据 且当前没有数据上传消息
+                dataProcessHandler.sendEmptyMessageDelayed(MsgUploadData, intervalUploadData);
             }
         }
 
@@ -275,6 +286,56 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     }
 
     /**
+     * 获取当前配置
+     * @return
+     */
+    public DataCollectConfig getCurrentConfig() {
+        DataCollectConfig config = new DataCollectConfig();
+        config.deviceName = "test";
+        config.isUploadData = this.isNeedUploadData;
+        config.isUseTestServer = dataUploadService.isUseTestServer();
+        config.sensorFrequency = dataCollectService.getSensorFrequency();
+        config.dataSampleInterval = this.intervalCollectData;
+        config.dataUploadInterval = this.intervalUploadData;
+        config.maxReUploadTimes = this.maxReUploadTimes;
+        return config;
+    }
+
+    /**
+     * 更新配置
+     */
+    public void updateConfig(DataCollectConfig config) {
+        LogUtil.d(TAG, "data collect config update");
+        // todo 设备名配置
+        this.isNeedUploadData = config.isUploadData;
+        dataUploadService.setUseTestServer(config.isUseTestServer);
+
+        if (config.sensorFrequency > 0) {
+            dataCollectService.configSensorFrequency(config.sensorFrequency);
+        } else {
+            notifyUIUpdate(NotifyType.ToastMessage, "设置传感器频率失败，需要大于0");
+        }
+
+        if (config.dataSampleInterval > 500) {
+            this.intervalCollectData = config.dataSampleInterval;
+        } else {
+            notifyUIUpdate(NotifyType.ToastMessage, "设置数据采样间隔失败，需要大于500");
+        }
+
+        if (config.dataUploadInterval > 5000) {
+            this.intervalUploadData = config.dataUploadInterval;
+        } else {
+            notifyUIUpdate(NotifyType.ToastMessage, "设置数据上传间隔失败，需要大于5000");
+        }
+
+        if (config.maxReUploadTimes > 5) {
+            this.maxReUploadTimes = config.maxReUploadTimes;
+        } else {
+            notifyUIUpdate(NotifyType.ToastMessage, "设置失败最大重传次数失败，需要大于5");
+        }
+    }
+
+    /**
      * 初始化数据操作handler
      */
     private void initDataProcessHandler() {
@@ -293,12 +354,16 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                         // 如果仍然在进行数据采集
                         if (isDataCollecting) {
                             // 加入缓存后生成下一次的数据载体
-                            currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
+                            currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, intervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
                             // 下一次收集数据的时间
-                            dataProcessHandler.sendEmptyMessageDelayed(MsgCollectData, IntervalCollectData);
+                            dataProcessHandler.sendEmptyMessageDelayed(MsgCollectData, intervalCollectData);
                         }
                         break;
                     case MsgUploadData:
+                        if (!isNeedUploadData) {
+                            return;
+                        }
+
                         // set workflow variable
                         isDataUploading = true;
                         // 添加提示
@@ -307,7 +372,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
 
                         if (isDataCollecting) {
                             // 下一次上传数据的时间
-                            dataProcessHandler.sendEmptyMessageDelayed(MsgUploadData, IntervalUploadData);
+                            dataProcessHandler.sendEmptyMessageDelayed(MsgUploadData, intervalUploadData);
                         }
                         break;
                     default:
@@ -316,6 +381,12 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                 super.handleMessage(msg);
             }
         };
+    }
+
+    private void checkServiceSituation() {
+        if (dataCollectService != null && dataUploadService != null) {
+            notifyUIUpdate(NotifyType.ConfigShow, null);
+        }
     }
 
     /**
@@ -358,6 +429,9 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                 break;
             case GpsUpdate:
                 message.what = UIMessage.GPS_UPDATE;
+                break;
+            case ConfigShow:
+                message.what = UIMessage.SHOW_CONFIG_DIALOG;
                 break;
         }
 

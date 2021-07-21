@@ -39,6 +39,8 @@ public class DUService extends Service {
     private static final String SERVER_URL = DataConst.OkHttpConfig.SERVER_URL;
 
     private boolean enableService = false;
+    private boolean useTestServer = false;
+
     private OkHttpClient mOkHttpClient;
     private final Gson gson = new Gson();
 
@@ -86,7 +88,23 @@ public class DUService extends Service {
      * @param enable 是否激活
      */
     public void enableService(boolean enable) {
-        enableService = enable;
+        this.enableService = enable;
+    }
+
+    /**
+     * 配置测试服务器
+     * @param use 是否使用
+     */
+    public void setUseTestServer(boolean use) {
+        this.useTestServer = use;
+    }
+
+    /**
+     * 是否使用测试服务器
+     * @return 是否使用
+     */
+    public boolean isUseTestServer() {
+        return this.useTestServer;
     }
 
     /**

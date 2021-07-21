@@ -26,6 +26,15 @@
     <string name="data_collection">Data collection</string>
     <string name="localization">Localization</string>
 
+    <!-- data collect preconfig -->
+    <string name="device_name">设备名称:</string>
+    <string name="is_upload_data">上传数据:</string>
+    <string name="use_test_server">使用测试服务器:</string>
+    <string name="sensor_frequency_config">传感器频率:</string>
+    <string name="data_sample_interval">采样间隔(ms):</string>
+    <string name="data_upload_interval">上传间隔(ms):</string>
+    <string name="max_re_upload_times">最大重传次数:</string>
+
     <!-- data collect control -->
     <string name="start_collect">Start</string>
     <string name="data_collecting">Collecting</string>

@@ -13,7 +13,10 @@ import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.hybrid.tripleldc.R;
+import com.hybrid.tripleldc.bean.DataCollectConfig;
 import com.hybrid.tripleldc.control.DataCollectControl;
 import com.hybrid.tripleldc.databinding.ActivityDataCollectBinding;
 import com.hybrid.tripleldc.service.DCService;
@@ -24,6 +27,7 @@ import com.hybrid.tripleldc.util.ui.DialogUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
 import com.hybrid.tripleldc.view.widget.DCMainControlView;
+import com.hybrid.tripleldc.view.widget.DCConfigView;
 
 /**
  * Author: Joy
@@ -41,6 +45,9 @@ public class DataCollectActivity extends BaseActivity {
 
     private DataCollectControl dataCollectControl;
 
+    private DCConfigView dataCollectConfigView;
+    private AlertDialog dataCollectConfigDialog;
+
     // permission request code
     private static final int PERMISSION_ACCESS_FINE_LOCATION_CODE = 1001;
     private static final int PERMISSION_ACCESS_BACKGROUND_LOCATION_CODE = 1002;
@@ -54,6 +61,8 @@ public class DataCollectActivity extends BaseActivity {
         public static final int ACCELERATION_UPDATE = BASIC_MESSAGE + 4;
         public static final int GYROANGEL_UPDATE = BASIC_MESSAGE + 5;
         public static final int GPS_UPDATE = BASIC_MESSAGE + 6;
+
+        public static final int SHOW_CONFIG_DIALOG = BASIC_MESSAGE + 7;
     }
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper()) {
@@ -79,6 +88,9 @@ public class DataCollectActivity extends BaseActivity {
                 case UIMessage.GPS_UPDATE:
                     Double[] gps = (Double[]) msg.obj;
                     binding.dataDisplayArea.updateGPS(gps[0], gps[1]);
+                    break;
+                case UIMessage.SHOW_CONFIG_DIALOG:
+                    showConfigDialog();
                     break;
                 default:
                     break;
@@ -169,6 +181,23 @@ public class DataCollectActivity extends BaseActivity {
             // 更新UI
             binding.mainControlArea.enableLaneChanged(true);
         }
+
+        @Override
+        public void onConfigShow() {
+            mainHandler.sendEmptyMessage(UIMessage.SHOW_CONFIG_DIALOG);
+        }
+    };
+
+    private final DCConfigView.ConfigChangeCallback configChangeCallback = new DCConfigView.ConfigChangeCallback() {
+        @Override
+        public void onChange(DataCollectConfig config) {
+            // 更新配置
+            dataCollectControl.updateConfig(config);
+            // 隐藏配置框
+            dataCollectConfigDialog.dismiss();
+
+            LogUtil.d(TAG, "config dialog hide");
+        }
     };
 
     @Override
@@ -238,6 +267,23 @@ public class DataCollectActivity extends BaseActivity {
 
         Intent bindDUServiceIntent = new Intent(this, DUService.class);
         bindService(bindDUServiceIntent, mDUServiceConnection, BIND_AUTO_CREATE);
+    }
+
+    /**
+     * 展示配置对话框
+     */
+    private void showConfigDialog() {
+        if (dataCollectConfigDialog == null || dataCollectConfigView == null) {
+            dataCollectConfigView = new DCConfigView(this);
+            dataCollectConfigView.setConfigChangeCallback(configChangeCallback);
+            dataCollectConfigDialog = DialogUtil.createDialog(this, dataCollectConfigView);
+            dataCollectConfigDialog.setCanceledOnTouchOutside(Boolean.FALSE);
+        }
+        dataCollectConfigDialog.show();
+        // 展示当前配置
+        dataCollectConfigView.displayConfig(dataCollectControl.getCurrentConfig());
+
+        LogUtil.d(TAG, "config dialog show");
     }
 
     /**
