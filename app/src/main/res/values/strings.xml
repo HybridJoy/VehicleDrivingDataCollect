@@ -29,7 +29,9 @@
     <!-- data collect control -->
     <string name="start_collect">Start</string>
     <string name="data_collecting">Collecting</string>
-    <string name="lane_changed">Lane Changed</string>
+    <string name="left_lane_changed">L-Lane Changed</string>
+    <string name="right_lane_changed">R-Lane Changed</string>
+
 
     <!-- data collect display -->
     <string name="default_data_value">--</string>

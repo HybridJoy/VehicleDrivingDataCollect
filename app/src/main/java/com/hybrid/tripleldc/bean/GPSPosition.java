@@ -24,6 +24,10 @@ public class GPSPosition {
         this.latitude = latitude;
     }
 
+    public Double[] getValue() {
+        return new Double[]{longitude, latitude};
+    }
+
     public int getId() {
         return id;
     }

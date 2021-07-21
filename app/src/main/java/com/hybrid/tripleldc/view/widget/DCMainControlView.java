@@ -44,7 +44,7 @@ public class DCMainControlView extends LinearLayout {
 
         boolean onDCStop();
 
-        void onLaneChanged();
+        void onLaneChanged(boolean isLeftChange);
     }
 
     public enum CollectionStatus {
@@ -68,15 +68,22 @@ public class DCMainControlView extends LinearLayout {
                         controlCallback.onDCStop();
                     }
                     break;
-                case R.id.text_lane_change:
-                case R.id.img_lane_change_background:
+                case R.id.text_left_lane_change:
+                case R.id.img_left_lane_change_background:
                     if (currStatus == CollectionStatus.Start_Collect) {
                         // 避免多次点击
                         enableLaneChanged(false);
-                        controlCallback.onLaneChanged();
+                        controlCallback.onLaneChanged(true);
                     }
                     break;
-
+                case R.id.text_right_lane_change:
+                case R.id.img_right_lane_change_background:
+                    if (currStatus == CollectionStatus.Start_Collect) {
+                        // 避免多次点击
+                        enableLaneChanged(false);
+                        controlCallback.onLaneChanged(false);
+                    }
+                    break;
             }
         }
     };
@@ -112,8 +119,10 @@ public class DCMainControlView extends LinearLayout {
 
         binding.textMainControl.setOnClickListener(onClickListener);
         binding.imgMainControlBackground.setOnClickListener(onClickListener);
-        binding.textLaneChange.setOnClickListener(onClickListener);
-        binding.imgLaneChangeBackground.setOnClickListener(onClickListener);
+        binding.textLeftLaneChange.setOnClickListener(onClickListener);
+        binding.imgLeftLaneChangeBackground.setOnClickListener(onClickListener);
+        binding.textRightLaneChange.setOnClickListener(onClickListener);
+        binding.imgRightLaneChangeBackground.setOnClickListener(onClickListener);
     }
 
     public void enableMainControl(boolean enable) {
@@ -122,8 +131,10 @@ public class DCMainControlView extends LinearLayout {
     }
 
     public void enableLaneChanged(boolean enable) {
-        binding.textLaneChange.setEnabled(enable);
-        binding.imgLaneChangeBackground.setEnabled(enable);
+        binding.textLeftLaneChange.setEnabled(enable);
+        binding.imgLeftLaneChangeBackground.setEnabled(enable);
+        binding.textRightLaneChange.setEnabled(enable);
+        binding.imgRightLaneChangeBackground.setEnabled(enable);
     }
 
     public void setControlCallback(ControlCallback controlCallback) {
@@ -138,10 +149,14 @@ public class DCMainControlView extends LinearLayout {
                 binding.textMainControl.startAnimation(mainControlTranslateAnimation);
                 binding.imgMainControlBackground.startAnimation(mainControlTranslateAnimation);
                 // lane changed btn show
-                binding.imgLaneChangeBackground.startAnimation(laneChangedAppearAnimation);
-                binding.textLaneChange.startAnimation(laneChangedAppearAnimation);
-                binding.imgLaneChangeBackground.setVisibility(VISIBLE);
-                binding.textLaneChange.setVisibility(VISIBLE);
+                binding.imgLeftLaneChangeBackground.startAnimation(laneChangedAppearAnimation);
+                binding.textLeftLaneChange.startAnimation(laneChangedAppearAnimation);
+                binding.imgRightLaneChangeBackground.startAnimation(laneChangedAppearAnimation);
+                binding.textRightLaneChange.startAnimation(laneChangedAppearAnimation);
+                binding.imgLeftLaneChangeBackground.setVisibility(VISIBLE);
+                binding.textLeftLaneChange.setVisibility(VISIBLE);
+                binding.imgRightLaneChangeBackground.setVisibility(VISIBLE);
+                binding.textRightLaneChange.setVisibility(VISIBLE);
 
                 AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.deepskyblue, R.color.peachpuff, 1500);
 
@@ -153,10 +168,14 @@ public class DCMainControlView extends LinearLayout {
                 binding.textMainControl.startAnimation(mainControlResetAnimation);
                 binding.imgMainControlBackground.startAnimation(mainControlResetAnimation);
                 // lane changed btn hide
-                binding.imgLaneChangeBackground.startAnimation(laneChangedResetAnimation);
-                binding.textLaneChange.startAnimation(laneChangedResetAnimation);
-                binding.imgLaneChangeBackground.setVisibility(GONE);
-                binding.textLaneChange.setVisibility(GONE);
+                binding.imgLeftLaneChangeBackground.startAnimation(laneChangedResetAnimation);
+                binding.textLeftLaneChange.startAnimation(laneChangedResetAnimation);
+                binding.imgRightLaneChangeBackground.startAnimation(laneChangedResetAnimation);
+                binding.textRightLaneChange.startAnimation(laneChangedResetAnimation);
+                binding.imgLeftLaneChangeBackground.setVisibility(GONE);
+                binding.textLeftLaneChange.setVisibility(GONE);
+                binding.imgRightLaneChangeBackground.setVisibility(GONE);
+                binding.textRightLaneChange.setVisibility(GONE);
 
                 AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.peachpuff, R.color.deepskyblue, 1500);
 

@@ -14,33 +14,16 @@ import android.view.LayoutInflater;
 import android.view.WindowManager;
 
 import com.hybrid.tripleldc.R;
-import com.hybrid.tripleldc.bean.Acceleration;
-import com.hybrid.tripleldc.bean.GPSPosition;
-import com.hybrid.tripleldc.bean.GyroAngel;
-import com.hybrid.tripleldc.bean.LaneChangeInfo;
-import com.hybrid.tripleldc.config.DataConst;
-import com.hybrid.tripleldc.config.UIConst;
+import com.hybrid.tripleldc.control.DataCollectControl;
 import com.hybrid.tripleldc.databinding.ActivityDataCollectBinding;
 import com.hybrid.tripleldc.service.DCService;
 import com.hybrid.tripleldc.service.DUService;
-import com.hybrid.tripleldc.util.TripleLDCUtil;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.system.AppUtil;
-import com.hybrid.tripleldc.util.system.DateUtil;
 import com.hybrid.tripleldc.util.ui.DialogUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
 import com.hybrid.tripleldc.view.widget.DCMainControlView;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 /**
  * Author: Joy
@@ -53,72 +36,49 @@ import okhttp3.Response;
  */
 public class DataCollectActivity extends BaseActivity {
     private static final String TAG = "DataCollectActivity";
+
     ActivityDataCollectBinding binding;
 
-    // data collect and upload service
-    private DCService mDCService;
-    private DUService mDUService;
-
-    // workflow control
-    private boolean isDataCollecting = false;
-    private boolean isDataUploading = false;
-    // 重传次数
-    private int reUploadCount = 0;
-
-    // 当前时间片的变道数据
-    private long currTimeSliceID;
-    private LaneChangeInfo currLaneChangeInfo;
-
-    // 需要上传的变道数据
-    List<LaneChangeInfo> laneChangeInfoData;
-    List<LaneChangeInfo> tempLaneChangeInfoData;
-
-    // 最大重传次数
-    private static final int Max_Re_Upload_Times = 9999;
+    private DataCollectControl dataCollectControl;
 
     // permission request code
     private static final int PERMISSION_ACCESS_FINE_LOCATION_CODE = 1001;
     private static final int PERMISSION_ACCESS_BACKGROUND_LOCATION_CODE = 1002;
 
-    // handler message and delay
-    private static final int MsgCollectData = 1;
-    private static final int IntervalCollectData = 5000;
-    private static final int MsgUploadData = 2;
-    private static final int IntervalUploadData = 20000;
-    // todo bugfix: http response not close
-    // private static final int MsgHttpResponseClose = 3;
+    public static class UIMessage {
+        private static final int BASIC_MESSAGE = 100;
+        public static final int SHOW_ERROR_MESSAGE = BASIC_MESSAGE + 1;
+        public static final int SHOW_TIPS_MESSAGE = BASIC_MESSAGE + 2;
+        public static final int SHOW_TOAST_MESSAGE = BASIC_MESSAGE + 3;
+
+        public static final int ACCELERATION_UPDATE = BASIC_MESSAGE + 4;
+        public static final int GYROANGEL_UPDATE = BASIC_MESSAGE + 5;
+        public static final int GPS_UPDATE = BASIC_MESSAGE + 6;
+    }
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper()) {
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case MsgCollectData:
-                    loadData();
-                    if (isDataUploading) {
-                        tempLaneChangeInfoData.add(currLaneChangeInfo);
-                        LogUtil.d(TAG, String.format("data uploading, data add in temp, temp size: %s", tempLaneChangeInfoData.size()));
-                    } else {
-                        laneChangeInfoData.add(currLaneChangeInfo);
-                    }
-
-                    // 如果仍然在进行数据采集
-                    if (isDataCollecting) {
-                        // 加入缓存后生成下一次的数据载体
-                        currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
-                        // 下一次收集数据的时间
-                        mainHandler.sendEmptyMessageDelayed(MsgCollectData, IntervalCollectData);
-                    }
+                case UIMessage.SHOW_ERROR_MESSAGE:
+                    showTipsDialog((String) msg.obj, true);
                     break;
-                case MsgUploadData:
-                    // set workflow variable
-                    isDataUploading = true;
-                    // 添加提示
-                    ToastUtil.showNormalToast("数据上传中，请勿断开网络或离开本界面");
-                    mDUService.uploadLaneChangeInfo(laneChangeInfoData, httpCallback);
-
-                    if (isDataCollecting) {
-                        // 下一次上传数据的时间
-                        mainHandler.sendEmptyMessageDelayed(MsgUploadData, IntervalUploadData);
-                    }
+                case UIMessage.SHOW_TIPS_MESSAGE:
+                    showTipsDialog((String) msg.obj, false);
+                    break;
+                case UIMessage.SHOW_TOAST_MESSAGE:
+                    ToastUtil.showNormalToast((String) msg.obj);
+                    break;
+                case UIMessage.ACCELERATION_UPDATE:
+                    Float[] acceleration = (Float[]) msg.obj;
+                    binding.dataDisplayArea.updateAcceleration(acceleration[0], acceleration[1], acceleration[2]);
+                    break;
+                case UIMessage.GYROANGEL_UPDATE:
+                    Float[] gyro = (Float[]) msg.obj;
+                    binding.dataDisplayArea.updateGyro(gyro[0], gyro[1], gyro[2]);
+                    break;
+                case UIMessage.GPS_UPDATE:
+                    Double[] gps = (Double[]) msg.obj;
+                    binding.dataDisplayArea.updateGPS(gps[0], gps[1]);
                     break;
                 default:
                     break;
@@ -132,9 +92,9 @@ public class DataCollectActivity extends BaseActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             DCService.DCBinder mBinder = (DCService.DCBinder) service;
-            mDCService = mBinder.getService();
-            if (mDCService != null) {
-                mDCService.setDataChangeCallback(dataChangeCallback);
+            DCService dcService = mBinder.getService();
+            if (dcService != null) {
+                dataCollectControl.notifyDataCollectServiceCanUse(dcService, true);
             } else {
                 LogUtil.e(TAG, "DC service lose!");
                 throw new NullPointerException();
@@ -143,7 +103,7 @@ public class DataCollectActivity extends BaseActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mDCService = null;
+            dataCollectControl.notifyDataCollectServiceCanUse(null, false);
             LogUtil.d(TAG, "DC service disconnect");
         }
     };
@@ -153,10 +113,9 @@ public class DataCollectActivity extends BaseActivity {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             DUService.DUBinder mBinder = (DUService.DUBinder) service;
-            mDUService = mBinder.getService();
-            if (mDUService != null) {
-                // 测试服务器连接
-                mDUService.testServerConnect("", httpCallback);
+            DUService duService = mBinder.getService();
+            if (duService != null) {
+                dataCollectControl.notifyDataUploadServiceCanUse(duService, true);
             } else {
                 LogUtil.e(TAG, "DU service lose!");
                 throw new NullPointerException();
@@ -165,147 +124,17 @@ public class DataCollectActivity extends BaseActivity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mDUService = null;
+            dataCollectControl.notifyDataUploadServiceCanUse(null, false);
             LogUtil.d(TAG, "DU service disconnect");
-        }
-    };
-
-    /**
-     * 网络请求回调在这里处理
-     */
-    private final Callback httpCallback = new Callback() {
-        @Override
-        public void onFailure(@NotNull final Call call, @NotNull final IOException e) {
-            mainHandler.post(() -> {
-                String requestTag = (String) call.request().tag();
-                if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
-                    LogUtil.e(TAG, String.format("data upload failed, retry: %d", ++reUploadCount));
-                    // 数据重传机制
-                    // isDataUploading一直为true,新到数据持续写入 tempLaneChangeInfoData
-                    if (reUploadCount < Max_Re_Upload_Times) {
-                        mDUService.uploadLaneChangeInfo(laneChangeInfoData, httpCallback);
-                    } else {
-                        // todo 写本地数据库操作
-
-                        LogUtil.e(TAG, String.format("retry time reach to max(%d), write to local DB", Max_Re_Upload_Times));
-                    }
-                } else {
-                    // 默认显示错误消息
-                    showTipsDialog(e.getMessage(), true);
-                }
-            });
-        }
-
-        @Override
-        public void onResponse(@NotNull Call call, @NotNull final Response response) throws IOException {
-            mainHandler.post(() -> {
-                String requestTag = (String) response.request().tag();
-                if (requestTag.equals(DataConst.RequestTag.REQUEST_TEST_SERVER_CONNECT_TAG)) {
-                    if (!response.isSuccessful()) {
-                        LogUtil.e(TAG, String.format("%s failed, code: %s", response.request().url(), response.code()));
-                        // todo 返回不成功的操作
-                        return;
-                    }
-                    showTipsDialog(UIConst.DialogMessage.TEST_SERVER_CONNECT_SUCCESSFUL, false);
-                    // 服务器连接成功后，对TimeSliceID进行校正
-                    mDUService.getLatestTimeSliceID(httpCallback);
-                } else if (requestTag.equals(DataConst.RequestTag.REQUEST_GET_LATEST_TIME_SLICE_ID_TAG)) {
-                    if (!response.isSuccessful()) {
-                        LogUtil.e(TAG, String.format("%s failed, code: %s", response.request().url(), response.code()));
-                        // todo 返回不成功的操作
-                        return;
-                    }
-                    String serverLatestTimeSliceID;
-                    try {
-                        serverLatestTimeSliceID = response.body().string();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        LogUtil.e(TAG, "parse data error");
-                        return;
-                    }
-                    if (serverLatestTimeSliceID.equals("0")) {
-                        ToastUtil.showNormalToast(String.format("服务器时间无效，无须校正，当前时间片ID为 %s", currTimeSliceID));
-                    } else {
-                        long serverLatestTimeSliceIDLong = Long.parseLong(serverLatestTimeSliceID);
-                        if (serverLatestTimeSliceIDLong / 10000 == currTimeSliceID / 10000) {
-                            currTimeSliceID = Long.parseLong(serverLatestTimeSliceID);
-                            ToastUtil.showNormalToast(String.format("校正时间片ID为 %s", serverLatestTimeSliceID));
-                        } else {
-                            ToastUtil.showNormalToast(String.format("服务器最新数据采集时间 %s", serverLatestTimeSliceIDLong / 10000));
-                        }
-                    }
-                } else if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
-                    if (!response.isSuccessful()) {
-                        LogUtil.e(TAG, String.format("%s failed, code: %s", response.request().url(), response.code()));
-                        // todo 返回不成功的操作
-                        return;
-                    }
-
-                    // 成功就重置重传计数
-                    reUploadCount = 0;
-
-                    // 数据上传成功的逻辑
-                    // set workflow variable
-                    isDataUploading = false;
-                    laneChangeInfoData.clear();
-                    laneChangeInfoData.addAll(tempLaneChangeInfoData);
-                    tempLaneChangeInfoData = new ArrayList<>();
-
-                    // 添加提示
-                    ToastUtil.showNormalToast("数据上传成功");
-
-                    LogUtil.d(TAG, String.format("upload lane change data success, get temp data (%s)", laneChangeInfoData.size()));
-                }
-            });
-        }
-    };
-
-    private final DCService.DataChangeCallback dataChangeCallback = new DCService.DataChangeCallback() {
-        @Override
-        public void onAccChanged(Acceleration acceleration) {
-            // LogUtil.d(TAG, "onAccChanged");
-            binding.dataDisplayArea.updateAcceleration(acceleration.getXComponent(), acceleration.getYComponent(), acceleration.getZComponent());
-        }
-
-        @Override
-        public void onGyroChanged(GyroAngel gyroAngel) {
-            // LogUtil.d(TAG, "onGyroChanged");
-            binding.dataDisplayArea.updateGyro(gyroAngel.getXComponent(), gyroAngel.getYComponent(), gyroAngel.getZComponent());
-        }
-
-        @Override
-        public void onGPSChanged(GPSPosition position) {
-            // LogUtil.d(TAG, "onGPSChanged");
-            binding.dataDisplayArea.updateGPS(position.getLongitude(), position.getLatitude());
         }
     };
 
     private final DCMainControlView.ControlCallback controlCallback = new DCMainControlView.ControlCallback() {
         @Override
         public boolean onDCStart() {
-            boolean success = mDCService.startDC();
+            // 开始数据采集
+            boolean success = dataCollectControl.startDataCollect();
             if (success) {
-                // set workflow variable
-                isDataCollecting = true;
-                LogUtil.d(TAG, "start data collect");
-
-                // init data cache
-                if (laneChangeInfoData == null) {
-                    laneChangeInfoData = new ArrayList<>();
-                }
-                if (tempLaneChangeInfoData == null) {
-                    tempLaneChangeInfoData = new ArrayList<>();
-                }
-
-                // 生成数据载体
-                currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, IntervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
-                // 生成数据采集消息
-                mainHandler.sendEmptyMessageDelayed(MsgCollectData, IntervalCollectData);
-                // 生成数据上传消息
-                if (!mainHandler.hasMessages(MsgUploadData)) {
-                    mainHandler.sendEmptyMessageDelayed(MsgUploadData, IntervalUploadData);
-                }
-
                 // 更新UI
                 binding.dataDisplayArea.startFlush();
                 binding.mainControlArea.setControlStatus(DCMainControlView.CollectionStatus.Start_Collect);
@@ -319,16 +148,8 @@ public class DataCollectActivity extends BaseActivity {
 
         @Override
         public boolean onDCStop() {
-            // set workflow variable
-            isDataCollecting = false;
-
-            // 移除当前存在的数据收集消息
-            mainHandler.removeMessages(MsgCollectData);
-            // 立即进行一次数据收集
-            mainHandler.sendEmptyMessage(MsgCollectData);
-            // 停止数据收集服务
-            mDCService.endDC();
-            LogUtil.d(TAG, "end data collect");
+            // 停止数据采集
+            dataCollectControl.stopDataCollect();
 
             // 更新UI
             binding.dataDisplayArea.endFlush();
@@ -339,13 +160,12 @@ public class DataCollectActivity extends BaseActivity {
         }
 
         @Override
-        public void onLaneChanged() {
-            // todo 区分变道类型
+        public void onLaneChanged(boolean isLeftChange) {
             // 变道标记
-            currLaneChangeInfo.setLaneChanged(true);
-            currLaneChangeInfo.setLaneChangedType(0);
-            currLaneChangeInfo.setLaneChangedTime(DateUtil.getTimestampString(System.currentTimeMillis()));
+            dataCollectControl.setLaneChangedFlag(isLeftChange);
 
+            // 操作反馈
+            ToastUtil.showNormalToast(String.format("car %s lane changed", isLeftChange ? "left" : "right"));
             // 更新UI
             binding.mainControlArea.enableLaneChanged(true);
         }
@@ -366,16 +186,14 @@ public class DataCollectActivity extends BaseActivity {
             LogUtil.e(TAG, "hide action bar failed");
             e.printStackTrace();
         }
-
         setContentView(binding.getRoot());
-
-        binding.mainControlArea.setControlCallback(controlCallback);
 
         requestPermissions();
         initServices();
 
-        // default init
-        currTimeSliceID = TripleLDCUtil.generateTimeSliceIDOriginByDate();
+        binding.mainControlArea.setControlCallback(controlCallback);
+        // 注入
+        dataCollectControl = new DataCollectControl(mainHandler);
     }
 
     @Override
@@ -394,21 +212,9 @@ public class DataCollectActivity extends BaseActivity {
         // 移除所有消息
         mainHandler.removeCallbacksAndMessages(null);
 
+        dataCollectControl.release();
+
         super.onDestroy();
-    }
-
-    /**
-     * 从 {@link DCService} 缓存区获取数据装载到 {@link LaneChangeInfo} 中
-     */
-    private void loadData() {
-        currLaneChangeInfo.setAccelerationData(mDCService.getAcceleration());
-        currLaneChangeInfo.setGyroAngelData(mDCService.getGyroAngel());
-        currLaneChangeInfo.setOrientationData(mDCService.getOrientation());
-        currLaneChangeInfo.setGpsPositionData(mDCService.getGPSPosition());
-        currLaneChangeInfo.setEndTime(DateUtil.getTimestampString(System.currentTimeMillis()));
-
-        // 数据装载完毕后，清空缓存
-        mDCService.resetSensorData();
     }
 
     /**

@@ -34,33 +34,65 @@
     </TextView>
 
     <ImageView
-        android:id="@+id/img_lane_change_background"
+        android:id="@+id/img_left_lane_change_background"
         android:layout_width="150dp"
         android:layout_height="50dp"
         android:layout_gravity="center"
         android:src="@drawable/drawable_darkseagreen_rectangle_background"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/img_main_control_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/img_main_control_background"
+        app:layout_constraintVertical_bias="0.2"
+        app:layout_constraintHorizontal_bias="0.95"
+        tools:visibility="visible"></ImageView>
+
+    <TextView
+        android:id="@+id/text_left_lane_change"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:fontFamily="monospace"
+        android:text="@string/left_lane_changed"
+        android:textColor="@color/darkslateblue"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/img_left_lane_change_background"
+        app:layout_constraintEnd_toEndOf="@+id/img_left_lane_change_background"
+        app:layout_constraintStart_toStartOf="@+id/img_left_lane_change_background"
+        app:layout_constraintTop_toTopOf="@+id/img_left_lane_change_background"
+        tools:visibility="visible">
+    </TextView>
+
+    <ImageView
+        android:id="@+id/img_right_lane_change_background"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:src="@drawable/drawable_darkseagreen_rectangle_background"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/img_main_control_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/img_main_control_background"
+        app:layout_constraintVertical_bias="0.8"
         app:layout_constraintHorizontal_bias="0.95"
         tools:visibility="visible">
     </ImageView>
 
     <TextView
-        android:id="@+id/text_lane_change"
+        android:id="@+id/text_right_lane_change"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:fontFamily="monospace"
-        android:text="@string/lane_changed"
+        android:text="@string/right_lane_changed"
         android:textColor="@color/darkslateblue"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/img_lane_change_background"
-        app:layout_constraintEnd_toEndOf="@+id/img_lane_change_background"
-        app:layout_constraintStart_toStartOf="@+id/img_lane_change_background"
-        app:layout_constraintTop_toTopOf="@+id/img_lane_change_background"
+        app:layout_constraintBottom_toBottomOf="@+id/img_right_lane_change_background"
+        app:layout_constraintEnd_toEndOf="@+id/img_right_lane_change_background"
+        app:layout_constraintStart_toStartOf="@+id/img_right_lane_change_background"
+        app:layout_constraintTop_toTopOf="@+id/img_right_lane_change_background"
         tools:visibility="visible">
     </TextView>
 

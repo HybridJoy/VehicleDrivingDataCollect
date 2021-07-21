@@ -45,6 +45,12 @@ public class LaneChangeInfo {
     private int gpsPositionStartID;
     private int gpsPositionEndID;
 
+    public static class LaneChangeType {
+        public static final int NO_TYPE = 0;
+        public static final int LEFT = 1;
+        public static final int RIGHT = 2;
+    }
+
     public LaneChangeInfo(long timeSliceID, int timeSliceInterval, String startTime) {
         this.timeSliceID = timeSliceID;
         this.timeSliceInterval = timeSliceInterval;

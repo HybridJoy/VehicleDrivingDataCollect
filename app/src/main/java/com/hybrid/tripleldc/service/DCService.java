@@ -33,6 +33,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     private static final String TAG = "DataCollectService";
 
+    private boolean enableService = false;
     private int sensorFrequency = BaseSensor.Default_Frequency;
 
     private boolean isSensorActivated = false; // 传感器是否激活
@@ -184,6 +185,15 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     }
 
     /**
+     * 激活服务
+     *
+     * @param enable 是否激活
+     */
+    public void enableService(boolean enable) {
+        enableService = enable;
+    }
+    
+    /**
      * 数据收集服务是否开始
      * 由传感器是否激活和GPS定位是否正常开启来判断
      *
@@ -200,6 +210,11 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      * @return 是否开启成功
      */
     public boolean startDC() {
+        if (!enableService) {
+            LogUtil.i(TAG, "enable service first");
+            return false;
+        }
+
         if (isSensorActivated || isGPSLocationOpened) { // 如果上一次未正常结束数据收集，先结束上一轮数据收集
             endDC();
         }
@@ -260,14 +275,6 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      *
      * @return 返回时间片内缓存的加速度数据
      */
-//    public List<Float[]> getAcceleration() {
-//        LogUtil.d(TAG, "accelerations size: " + accelerations.size());
-//        List<Float[]> accData = new ArrayList<>();
-//        for (Acceleration acc : accelerations) {
-//            accData.add(acc.getValue());
-//        }
-//        return accData;
-//    }
     public List<Acceleration> getAcceleration() {
         LogUtil.d(TAG, "accelerations size: " + accelerations.size());
         return accelerations;

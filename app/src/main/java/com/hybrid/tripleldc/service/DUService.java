@@ -35,13 +35,17 @@ import okhttp3.RequestBody;
 public class DUService extends Service {
     private static final String TAG = "DataUploadService";
 
-    private static final MediaType JSON =  MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final String SERVER_URL = DataConst.OkHttpConfig.SERVER_URL;
 
+    private boolean enableService = false;
     private OkHttpClient mOkHttpClient;
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
-    private DUBinder mBinder;
+    public interface UploadCallback extends Callback {
+
+    }
+
     public class DUBinder extends Binder {
         public DUService getService() {
             return DUService.this;
@@ -51,8 +55,7 @@ public class DUService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        mBinder = new DUBinder();
-        return mBinder;
+        return new DUBinder();
     }
 
     @Override
@@ -78,11 +81,26 @@ public class DUService extends Service {
     }
 
     /**
+     * 激活服务
+     *
+     * @param enable 是否激活
+     */
+    public void enableService(boolean enable) {
+        enableService = enable;
+    }
+
+    /**
      * 测试服务器连接
-     * @param severUrl
-     * @param callback
+     *
+     * @param severUrl 服务器地址
+     * @param callback http回调
      */
     public void testServerConnect(String severUrl, Callback callback) {
+        if (!enableService) {
+            LogUtil.i(TAG, "enable service first");
+            return;
+        }
+
         LogUtil.i(TAG, "testServerConnect");
         if (severUrl.equals("")) {
             severUrl = SERVER_URL;
@@ -98,9 +116,15 @@ public class DUService extends Service {
 
     /**
      * 获取服务器最新的时间片ID
-     * @param callback
+     *
+     * @param callback http回调
      */
     public void getLatestTimeSliceID(Callback callback) {
+        if (!enableService) {
+            LogUtil.i(TAG, "enable service first");
+            return;
+        }
+
         LogUtil.i(TAG, "getLatestTimeSliceID");
         Request request = new Request.Builder()
                 .url(SERVER_URL + DataConst.Request.REQUEST_GET_LATEST_TIME_SLICE_ID)
@@ -112,10 +136,16 @@ public class DUService extends Service {
 
     /**
      * 上传变道数据
-     * @param laneChangeInfos
-     * @param callback
+     *
+     * @param laneChangeInfos 变道数据
+     * @param callback        http回调
      */
     public void uploadLaneChangeInfo(List<LaneChangeInfo> laneChangeInfos, Callback callback) {
+        if (!enableService) {
+            LogUtil.i(TAG, "enable service first");
+            return;
+        }
+
         LogUtil.i(TAG, "uploadLaneChangeInfo");
         String json = gson.toJson(laneChangeInfos);
         RequestBody body = RequestBody.create(JSON, json);
@@ -130,10 +160,16 @@ public class DUService extends Service {
 
     /**
      * 测试用接口
-     * @param gyroAngels
-     * @param callback
+     *
+     * @param gyroAngels 角速度数据
+     * @param callback   http回调
      */
     public void uploadGyroTest(List<GyroAngel> gyroAngels, Callback callback) {
+        if (!enableService) {
+            LogUtil.i(TAG, "enable service first");
+            return;
+        }
+
         LogUtil.i(TAG, "uploadGyroTest");
         String json = gson.toJson(gyroAngels);
         RequestBody body = RequestBody.create(JSON, json);
