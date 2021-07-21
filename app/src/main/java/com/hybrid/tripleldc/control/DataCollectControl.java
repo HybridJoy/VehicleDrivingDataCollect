@@ -99,8 +99,12 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
         dataUploadService = null;
 
         currLaneChangeInfo = null;
-        laneChangeInfoData.clear();
-        tempLaneChangeInfoData.clear();
+        if (laneChangeInfoData != null) {
+            laneChangeInfoData.clear();
+        }
+        if (tempLaneChangeInfoData != null) {
+            tempLaneChangeInfoData.clear();
+        }
     }
 
     @Override
