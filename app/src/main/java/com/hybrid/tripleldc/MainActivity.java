@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.bumptech.glide.Glide;
 import com.hybrid.tripleldc.databinding.ActivityMainBinding;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.system.AppUtil;
@@ -45,12 +44,6 @@ public class MainActivity extends BaseActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
-
-        // loading image show by random
-        int index = (int)(Math.random() * 99 + 1);
-        Glide.with(MainActivity.this)
-             .load(index < 50 ? R.drawable.vehicle_move_1 : R.drawable.vehicle_move_2)
-             .into(binding.imgShow);
 
         // init main control callback
         binding.mainControlArea.setOperationCallback(operationCallback);
