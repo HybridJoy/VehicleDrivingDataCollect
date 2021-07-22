@@ -12,7 +12,11 @@ import java.util.List;
  * Describe:
  */
 public class LaneChangeInfo {
-    // 时间片ID (主键)
+    // id (主键)
+    private int id;
+    // 设备名称
+    private String deviceName;
+    // 时间片ID
     private long timeSliceID;
     // 时间片大小
     private int timeSliceInterval;
@@ -51,10 +55,27 @@ public class LaneChangeInfo {
         public static final int RIGHT = 2;
     }
 
-    public LaneChangeInfo(long timeSliceID, int timeSliceInterval, String startTime) {
+    public LaneChangeInfo(String deviceName, long timeSliceID, int timeSliceInterval, String startTime) {
+        this.deviceName = deviceName;
         this.timeSliceID = timeSliceID;
         this.timeSliceInterval = timeSliceInterval;
         this.startTime = startTime;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public long getTimeSliceID() {

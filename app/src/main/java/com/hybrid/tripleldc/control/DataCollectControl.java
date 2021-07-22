@@ -39,6 +39,9 @@ import okhttp3.Response;
  */
 public class DataCollectControl implements DUService.UploadCallback, DCService.DataChangeCallback {
     private static final String TAG = "DataCollectControl";
+
+    // todo 改为获取设备名
+    private String deviceName = DataConst.System.DEFAULT_DEVICE_NAME;
     // DataCollect
     private DCService dataCollectService;
     private boolean isDataCollecting = false;
@@ -80,6 +83,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     private static final int DefaultIntervalCollectData = 5000;
     private static final int MsgUploadData = 2;
     private static final int DefaultIntervalUploadData = 20000;
+    private static final int MsgDeviceNameChange = 3;
 
     public DataCollectControl(Handler mainThreadHandler) {
         this.uiThreadHandler = mainThreadHandler;
@@ -249,7 +253,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
             }
 
             // 生成数据载体
-            currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, intervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
+            currLaneChangeInfo = new LaneChangeInfo(deviceName, ++currTimeSliceID, intervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
             // 生成数据采集消息
             dataProcessHandler.sendEmptyMessageDelayed(MsgCollectData, intervalCollectData);
             // 生成数据上传消息
@@ -295,7 +299,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
      */
     public DataCollectConfig getCurrentConfig() {
         DataCollectConfig config = new DataCollectConfig();
-        config.deviceName = "test";
+        config.deviceName = this.deviceName;
         config.isUploadData = this.isNeedUploadData;
         config.isUseTestServer = dataUploadService.isUseTestServer();
         config.sensorFrequency = dataCollectService.getSensorFrequency();
@@ -310,7 +314,12 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
      */
     public void updateConfig(DataCollectConfig config) {
         LogUtil.d(TAG, "data collect config update");
-        // todo 设备名配置
+
+        if (!this.deviceName.equals(config.deviceName)) {
+            this.deviceName = config.deviceName;
+            notifyUIUpdate(NotifyType.ToastMessage, "设备名改变");
+            dataProcessHandler.sendEmptyMessage(MsgDeviceNameChange);
+        }
         this.isNeedUploadData = config.isUploadData;
         dataUploadService.setUseTestServer(config.isUseTestServer);
 
@@ -358,7 +367,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                         // 如果仍然在进行数据采集
                         if (isDataCollecting) {
                             // 加入缓存后生成下一次的数据载体
-                            currLaneChangeInfo = new LaneChangeInfo(++currTimeSliceID, intervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
+                            currLaneChangeInfo = new LaneChangeInfo(deviceName, ++currTimeSliceID, intervalCollectData, DateUtil.getTimestampString(System.currentTimeMillis()));
                             // 下一次收集数据的时间
                             dataProcessHandler.sendEmptyMessageDelayed(MsgCollectData, intervalCollectData);
                         }
@@ -378,6 +387,10 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                             // 下一次上传数据的时间
                             dataProcessHandler.sendEmptyMessageDelayed(MsgUploadData, intervalUploadData);
                         }
+                        break;
+                    case MsgDeviceNameChange:
+                        // 更新时间片ID
+                        dataUploadService.getLatestTimeSliceID(deviceName, DataCollectControl.this);
                         break;
                     default:
                         break;

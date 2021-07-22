@@ -13,6 +13,8 @@ import com.hybrid.tripleldc.bean.LaneChangeInfo;
 import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.util.io.LogUtil;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -137,7 +139,7 @@ public class DUService extends Service {
      *
      * @param callback http回调
      */
-    public void getLatestTimeSliceID(Callback callback) {
+    public void getLatestTimeSliceID(@NotNull String deviceName, Callback callback) {
         if (!enableService) {
             LogUtil.i(TAG, "enable service first");
             return;
@@ -145,7 +147,7 @@ public class DUService extends Service {
 
         LogUtil.i(TAG, "getLatestTimeSliceID");
         Request request = new Request.Builder()
-                .url(SERVER_URL + DataConst.Request.REQUEST_GET_LATEST_TIME_SLICE_ID)
+                .url(SERVER_URL + DataConst.Request.REQUEST_GET_LATEST_TIME_SLICE_ID + "?deviceName=" + deviceName)
                 .tag(DataConst.RequestTag.REQUEST_GET_LATEST_TIME_SLICE_ID_TAG)
                 .build();
         Call call = mOkHttpClient.newCall(request);

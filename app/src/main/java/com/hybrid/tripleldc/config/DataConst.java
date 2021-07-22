@@ -51,5 +51,6 @@ public class DataConst {
     public static class System {
         // 和 spring.gson.date-format (详见application.properties) 一致
         public static final String TIME_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+        public static final String DEFAULT_DEVICE_NAME = "default";
     }
 }

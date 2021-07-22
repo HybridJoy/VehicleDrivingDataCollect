@@ -198,6 +198,11 @@ public class DataCollectActivity extends BaseActivity {
 
             LogUtil.d(TAG, "config dialog hide");
         }
+
+        @Override
+        public void onDeviceNameNotSet() {
+            showTipsDialog("设备名不能为空或默认值", true);
+        }
     };
 
     @Override

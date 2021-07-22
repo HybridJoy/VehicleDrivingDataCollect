@@ -1,6 +1,7 @@
 package com.hybrid.tripleldc.view.widget;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -9,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.hybrid.tripleldc.R;
 import com.hybrid.tripleldc.bean.DataCollectConfig;
+import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.databinding.ViewDataCollectConfigBinding;
 
 /**
@@ -27,12 +29,18 @@ public class DCConfigView extends LinearLayout {
     private ConfigChangeCallback configChangeCallback;
     public interface ConfigChangeCallback {
         void onChange(DataCollectConfig config);
+        void onDeviceNameNotSet();
     }
 
     private OnClickListener onClickListener = v -> {
         switch (v.getId()) {
             case R.id.text_enter:
             case R.id.img_enter_background:
+                if (TextUtils.isEmpty(binding.editDeviceName.getText().toString()) ||
+                        binding.editDeviceName.getText().toString().equals(DataConst.System.DEFAULT_DEVICE_NAME)) {
+                    configChangeCallback.onDeviceNameNotSet();
+                    return;
+                }
                 configChangeCallback.onChange(readConfig());
                 break;
         }
