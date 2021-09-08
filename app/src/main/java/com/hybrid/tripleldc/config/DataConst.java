@@ -3,8 +3,9 @@ package com.hybrid.tripleldc.config;
 public class DataConst {
 
     public static class OkHttpConfig {
-        public static String ALIYUN_SERVER_SEVER_URL = "http://47.112.138.173:20558";
-        public static String LOCAL_SERVER_URL = "http://192.168.21.202:31952";
+        public static String ALIYUN_SERVER_SEVER_URL = "http://47.112.138.173:31952";
+        public static String LOCAL_SERVER_URL = "http://192.168.21.199:31952";
+        public static String LOCAL_PHONE_SERVER_URL = "http://192.168.162.20:31952";
 
         // 在此配置服务器URL
         public static String SERVER_URL = LOCAL_SERVER_URL;

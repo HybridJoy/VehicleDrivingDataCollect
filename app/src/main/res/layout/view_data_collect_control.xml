@@ -46,7 +46,8 @@
         app:layout_constraintTop_toTopOf="@+id/img_main_control_background"
         app:layout_constraintVertical_bias="0.2"
         app:layout_constraintHorizontal_bias="0.95"
-        tools:visibility="visible"></ImageView>
+        tools:visibility="visible">
+    </ImageView>
 
     <TextView
         android:id="@+id/text_left_lane_change"
@@ -93,6 +94,38 @@
         app:layout_constraintEnd_toEndOf="@+id/img_right_lane_change_background"
         app:layout_constraintStart_toStartOf="@+id/img_right_lane_change_background"
         app:layout_constraintTop_toTopOf="@+id/img_right_lane_change_background"
+        tools:visibility="visible">
+    </TextView>
+
+    <ImageView
+        android:id="@+id/img_lane_change_finish_background"
+        android:layout_width="160dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:src="@drawable/drawable_tomatored_rectangle_background"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/img_main_control_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/img_main_control_background"
+        app:layout_constraintVertical_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.95"
+        tools:visibility="visible">
+    </ImageView>
+
+    <TextView
+        android:id="@+id/text_lane_change_finish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:fontFamily="monospace"
+        android:text="@string/lane_change_finish"
+        android:textColor="@color/darkslateblue"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/img_lane_change_finish_background"
+        app:layout_constraintEnd_toEndOf="@+id/img_lane_change_finish_background"
+        app:layout_constraintStart_toStartOf="@+id/img_lane_change_finish_background"
+        app:layout_constraintTop_toTopOf="@+id/img_lane_change_finish_background"
         tools:visibility="visible">
     </TextView>
 

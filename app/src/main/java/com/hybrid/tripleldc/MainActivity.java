@@ -23,7 +23,7 @@ public class MainActivity extends BaseActivity {
     private static final int PERMISSION_READ_EXTERNAL_STORAGE_CODE = 1001;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE_CODE = 1001;
 
-    private MainControlView.OperationCallback operationCallback = new MainControlView.OperationCallback() {
+    private final MainControlView.OperationCallback operationCallback = new MainControlView.OperationCallback() {
         @Override
         public void onDataCollection() {
             LogUtil.d(TAG, "enter DataCollectActivity");

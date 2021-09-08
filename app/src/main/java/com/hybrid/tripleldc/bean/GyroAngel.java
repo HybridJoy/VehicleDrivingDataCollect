@@ -1,50 +1,44 @@
 package com.hybrid.tripleldc.bean;
 
+import com.hybrid.tripleldc.bean.base.BaseSensorData;
+
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Author: Tasun
  * Time: 2020/8/7-20:15:06
  */
-public class GyroAngel {
-    private int id;
+public class GyroAngel extends BaseSensorData {
     private float xComponent;
     private float yComponent;
     private float zComponent;
-    private String sampleTime;
 
     public GyroAngel() {
 
     }
 
     /**
-     * 加速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
+     * 角速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
      *
-     * @param acceleration
+     * @param gyroangel 角速度三维读数
      */
-    public GyroAngel(float[] acceleration) {
-        setValue(acceleration);
+    public GyroAngel(float[] gyroangel) {
+        setValue(gyroangel);
     }
 
     /**
-     * 加速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
+     * 角速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
      *
-     * @param acceleration
+     * @param gyroangel 角速度三维读数
      */
-    public void setValue(float[] acceleration) {
-        xComponent = acceleration[0];
-        yComponent = acceleration[1];
-        zComponent = acceleration[2];
+    public void setValue(float[] gyroangel) {
+        xComponent = gyroangel[0];
+        yComponent = gyroangel[1];
+        zComponent = gyroangel[2];
     }
 
     public Float[] getValue() {
         return new Float[]{truncation(xComponent), truncation(yComponent), truncation(zComponent)};
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public float getXComponent() {
@@ -71,18 +65,11 @@ public class GyroAngel {
         this.zComponent = zComponent;
     }
 
-    public String getSampleTime() {
-        return sampleTime;
-    }
-
-    public void setSampleTime(String sampleTime) {
-        this.sampleTime = sampleTime;
-    }
-
     public float truncation(float a) {
         return ((float) Math.round(a * 1000)) / 1000;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "GyroAngel{" +

@@ -1,5 +1,6 @@
 package com.hybrid.tripleldc.view.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -42,9 +43,11 @@ public class DCMainControlView extends LinearLayout {
     public interface ControlCallback {
         boolean onDCStart();
 
-        boolean onDCStop();
+        void onDCStop();
 
-        void onLaneChanged(boolean isLeftChange);
+        void onLaneChangeStart(boolean isLeftChange);
+
+        void onLaneChangeFinish();
 
         void onConfigShow();
     }
@@ -54,7 +57,8 @@ public class DCMainControlView extends LinearLayout {
         Stop_Collect
     }
 
-    private OnClickListener onClickListener = new OnClickListener() {
+    private final OnClickListener onClickListener = new OnClickListener() {
+        @SuppressLint("NonConstantResourceId")
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
@@ -73,24 +77,29 @@ public class DCMainControlView extends LinearLayout {
                 case R.id.text_left_lane_change:
                 case R.id.img_left_lane_change_background:
                     if (currStatus == CollectionStatus.Start_Collect) {
-                        // 避免多次点击
-                        enableLaneChanged(false);
-                        controlCallback.onLaneChanged(true);
+                        showLaneChange(false, true, false);
+                        controlCallback.onLaneChangeStart(true);
                     }
                     break;
                 case R.id.text_right_lane_change:
                 case R.id.img_right_lane_change_background:
                     if (currStatus == CollectionStatus.Start_Collect) {
-                        // 避免多次点击
-                        enableLaneChanged(false);
-                        controlCallback.onLaneChanged(false);
+                        showLaneChange(false, true, false);
+                        controlCallback.onLaneChangeStart(false);
                     }
                     break;
+                case R.id.text_lane_change_finish:
+                case R.id.img_lane_change_finish_background:
+                    if (currStatus == CollectionStatus.Start_Collect) {
+                        showLaneChange(true, false, false);
+                        controlCallback.onLaneChangeFinish();
+                    }
             }
         }
     };
 
-    private OnLongClickListener onLongClickListener = new OnLongClickListener() {
+    private final OnLongClickListener onLongClickListener = new OnLongClickListener() {
+        @SuppressLint("NonConstantResourceId")
         @Override
         public boolean onLongClick(View v) {
             switch (v.getId()) {
@@ -131,8 +140,8 @@ public class DCMainControlView extends LinearLayout {
         // init animation
         mainControlTranslateAnimation = AnimatorUtil.generateTranslateAnimation(0.0f, -0.4f, 0.0f, 0.0f, 0, 1000);
         mainControlResetAnimation = AnimatorUtil.generateTranslateAnimation(-0.4f, 0.0f, 0.0f, 0.0f, 0, 1000);
-        laneChangedAppearAnimation = AnimatorUtil.generateAlphaAnimation(0.0f, 1.0f, 1500);
-        laneChangedResetAnimation = AnimatorUtil.generateAlphaAnimation(1.0f, 0.0f, 1500);
+        laneChangedAppearAnimation = AnimatorUtil.generateAlphaAnimation(0.0f, 1.0f, 1500, false);
+        laneChangedResetAnimation = AnimatorUtil.generateAlphaAnimation(1.0f, 0.0f, 1500, false);
 
         binding.textMainControl.setOnClickListener(onClickListener);
         binding.imgMainControlBackground.setOnClickListener(onClickListener);
@@ -140,6 +149,8 @@ public class DCMainControlView extends LinearLayout {
         binding.imgLeftLaneChangeBackground.setOnClickListener(onClickListener);
         binding.textRightLaneChange.setOnClickListener(onClickListener);
         binding.imgRightLaneChangeBackground.setOnClickListener(onClickListener);
+        binding.textLaneChangeFinish.setOnClickListener(onClickListener);
+        binding.imgLaneChangeFinishBackground.setOnClickListener(onClickListener);
 
         binding.textMainControl.setOnLongClickListener(onLongClickListener);
         binding.imgMainControlBackground.setOnLongClickListener(onLongClickListener);
@@ -148,13 +159,6 @@ public class DCMainControlView extends LinearLayout {
     public void enableMainControl(boolean enable) {
         binding.textMainControl.setEnabled(enable);
         binding.imgMainControlBackground.setEnabled(enable);
-    }
-
-    public void enableLaneChanged(boolean enable) {
-        binding.textLeftLaneChange.setEnabled(enable);
-        binding.imgLeftLaneChangeBackground.setEnabled(enable);
-        binding.textRightLaneChange.setEnabled(enable);
-        binding.imgRightLaneChangeBackground.setEnabled(enable);
     }
 
     public void setControlCallback(ControlCallback controlCallback) {
@@ -166,18 +170,11 @@ public class DCMainControlView extends LinearLayout {
             case Start_Collect:
                 binding.textMainControl.setTextSize(30.0f);
                 binding.textMainControl.setText(R.string.data_collecting);
-                binding.textMainControl.startAnimation(mainControlTranslateAnimation);
-                binding.imgMainControlBackground.startAnimation(mainControlTranslateAnimation);
+                // main control translate
+                runMainControlAnimation(mainControlTranslateAnimation);
                 // lane changed btn show
-                binding.imgLeftLaneChangeBackground.startAnimation(laneChangedAppearAnimation);
-                binding.textLeftLaneChange.startAnimation(laneChangedAppearAnimation);
-                binding.imgRightLaneChangeBackground.startAnimation(laneChangedAppearAnimation);
-                binding.textRightLaneChange.startAnimation(laneChangedAppearAnimation);
-                binding.imgLeftLaneChangeBackground.setVisibility(VISIBLE);
-                binding.textLeftLaneChange.setVisibility(VISIBLE);
-                binding.imgRightLaneChangeBackground.setVisibility(VISIBLE);
-                binding.textRightLaneChange.setVisibility(VISIBLE);
-
+                showLaneChange(true, false, true);
+                // change background color
                 AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.deepskyblue, R.color.peachpuff, 1500);
 
                 ToastUtil.showNormalToast("Data Collect Start....");
@@ -185,18 +182,11 @@ public class DCMainControlView extends LinearLayout {
             case Stop_Collect:
                 binding.textMainControl.setTextSize(50.0f);
                 binding.textMainControl.setText(R.string.start_collect);
-                binding.textMainControl.startAnimation(mainControlResetAnimation);
-                binding.imgMainControlBackground.startAnimation(mainControlResetAnimation);
+                // main control reset
+                runMainControlAnimation(mainControlResetAnimation);
                 // lane changed btn hide
-                binding.imgLeftLaneChangeBackground.startAnimation(laneChangedResetAnimation);
-                binding.textLeftLaneChange.startAnimation(laneChangedResetAnimation);
-                binding.imgRightLaneChangeBackground.startAnimation(laneChangedResetAnimation);
-                binding.textRightLaneChange.startAnimation(laneChangedResetAnimation);
-                binding.imgLeftLaneChangeBackground.setVisibility(GONE);
-                binding.textLeftLaneChange.setVisibility(GONE);
-                binding.imgRightLaneChangeBackground.setVisibility(GONE);
-                binding.textRightLaneChange.setVisibility(GONE);
-
+                showLaneChange(false, false, true);
+                // change background color
                 AnimatorUtil.colorTransit(binding.getRoot(), "backgroundColor", R.color.peachpuff, R.color.deepskyblue, 1500);
 
                 ToastUtil.showNormalToast("Data Collect End....");
@@ -209,8 +199,58 @@ public class DCMainControlView extends LinearLayout {
     }
 
     public void reset() {
-        enableLaneChanged(true);
         enableMainControl(true);
     }
 
+    private void runMainControlAnimation(Animation animation) {
+        binding.textMainControl.startAnimation(animation);
+        binding.imgMainControlBackground.startAnimation(animation);
+    }
+
+    private void showLaneChange(boolean lrShow, boolean finishShow, boolean useAnimation) {
+        showLaneChangLR(lrShow, useAnimation);
+        showLaneChangeFinish(finishShow, useAnimation);
+    }
+
+    private void showLaneChangLR(boolean show, boolean useAnimation) {
+        int status = show ? VISIBLE : GONE;
+        Animation animation =  show ? laneChangedAppearAnimation : laneChangedResetAnimation;
+
+        if (status == GONE && binding.textLeftLaneChange.getVisibility() == GONE) {
+            return;
+        }
+
+        // run animation
+        if (useAnimation) {
+            binding.imgLeftLaneChangeBackground.startAnimation(animation);
+            binding.textLeftLaneChange.startAnimation(animation);
+            binding.imgRightLaneChangeBackground.startAnimation(animation);
+            binding.textRightLaneChange.startAnimation(animation);
+        }
+
+        // set visibility
+        binding.textLeftLaneChange.setVisibility(status);
+        binding.imgLeftLaneChangeBackground.setVisibility(status);
+        binding.textRightLaneChange.setVisibility(status);
+        binding.imgRightLaneChangeBackground.setVisibility(status);
+    }
+
+    private void showLaneChangeFinish(boolean show, boolean useAnimation) {
+        int status = show ? VISIBLE : GONE;
+        Animation animation =  show ? laneChangedAppearAnimation : laneChangedResetAnimation;
+
+        if (status == GONE && binding.textLaneChangeFinish.getVisibility() == GONE) {
+            return;
+        }
+
+        // run animation
+        if (useAnimation) {
+            binding.textLaneChangeFinish.startAnimation(animation);
+            binding.imgLaneChangeFinishBackground.startAnimation(animation);
+        }
+
+        // set visibility
+        binding.textLaneChangeFinish.setVisibility(status);
+        binding.imgLaneChangeFinishBackground.setVisibility(status);
+    }
 }

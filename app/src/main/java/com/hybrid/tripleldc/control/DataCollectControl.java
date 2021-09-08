@@ -24,6 +24,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 
 import okhttp3.Call;
 import okhttp3.Response;
@@ -51,19 +54,22 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     // 需要上传的变道数据
     List<LaneChangeInfo> laneChangeInfoData;
     List<LaneChangeInfo> tempLaneChangeInfoData;
+    // 上次变道类型
+    int lastLaneChangedType;
 
     // DataUpload
     private DUService dataUploadService;
-    private boolean isNeedUploadData = true;
+    private boolean isNeedUploadData = false;
     private boolean isDataUploading = false;
     private int reUploadCount;
     private int maxReUploadTimes = Default_Max_Re_Upload_Times;
     // 最大重传次数
     private static final int Default_Max_Re_Upload_Times = 1000;
+    // 数据上传过程中，涉及的线程同步锁
+    private final ReentrantLock dataUploadLock = new ReentrantLock();
 
     // UI Thread Handler
     private final Handler uiThreadHandler;
-
     private enum NotifyType {
         DefaultError,
         TipsMessage,
@@ -114,17 +120,19 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     @Override
     public void onFailure(@NotNull Call call, @NotNull IOException e) {
         String requestTag = (String) call.request().tag();
+        assert requestTag != null;
+
         if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) {
-            LogUtil.e(TAG, String.format("data upload failed, retry: %d", ++reUploadCount));
+            LogUtil.e(TAG, String.format(Locale.ENGLISH, "data upload failed, retry: %d", ++reUploadCount));
             // 数据重传机制
-            // isDataUploading一直为true,新到数据持续写入 tempLaneChangeInfoData
+            // isDataUploading一直为true, 新的数据持续写入 tempLaneChangeInfoData
             if (reUploadCount < maxReUploadTimes) {
                 notifyUIUpdate(NotifyType.ToastMessage, String.format("数据上传失败，重试(%s)", reUploadCount));
                 dataUploadService.uploadLaneChangeInfo(laneChangeInfoData, DataCollectControl.this);
             } else {
                 // todo 写本地数据库操作
 
-                LogUtil.e(TAG, String.format("retry time reach to max(%d), write to local DB", maxReUploadTimes));
+                LogUtil.e(TAG, String.format(Locale.ENGLISH, "retry time reach to max(%d), write to local DB", maxReUploadTimes));
             }
         } else {
             // 默认显示错误消息
@@ -136,7 +144,9 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
         boolean success = response.isSuccessful();
         String requestTag = (String) response.request().tag();
-        LogUtil.e(TAG, String.format("%s %s, code: %s", response.request().url(), success ? "success" : "fail", response.code()));
+        assert requestTag != null;
+
+        LogUtil.e(TAG, String.format(Locale.ENGLISH, "%s %s, code: %s", response.request().url(), success ? "success" : "fail", response.code()));
 
         if (requestTag.equals(DataConst.RequestTag.REQUEST_TEST_SERVER_CONNECT_TAG)) { // 测试服务器连接
             notifyUIUpdate(NotifyType.TipsMessage, success ? UIConst.DialogMessage.TEST_SERVER_CONNECT_SUCCESSFUL : UIConst.DialogMessage.TEST_SERVER_CONNECT_FAILED);
@@ -147,7 +157,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
 
             String serverLatestTimeSliceID;
             try {
-                serverLatestTimeSliceID = response.body().string();
+                serverLatestTimeSliceID = Objects.requireNonNull(response.body()).string();
             } catch (IOException e) {
                 e.printStackTrace();
                 LogUtil.e(TAG, "parse data error");
@@ -155,14 +165,14 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
             }
 
             if (serverLatestTimeSliceID.equals("0")) {
-                notifyUIUpdate(NotifyType.ToastMessage, String.format("服务器时间无效，无须校正，当前时间片ID为 %s", currTimeSliceID));
+                notifyUIUpdate(NotifyType.ToastMessage, String.format(Locale.CHINA, "服务器时间无效，无须校正，当前时间片ID为 %s", currTimeSliceID));
             } else {
                 long serverLatestTimeSliceIDLong = Long.parseLong(serverLatestTimeSliceID);
                 if (serverLatestTimeSliceIDLong / 10000 == currTimeSliceID / 10000) {
                     currTimeSliceID = Long.parseLong(serverLatestTimeSliceID);
-                    notifyUIUpdate(NotifyType.ToastMessage, String.format("校正时间片ID为 %s", serverLatestTimeSliceID));
+                    notifyUIUpdate(NotifyType.ToastMessage, String.format(Locale.CHINA, "校正时间片ID为 %s", serverLatestTimeSliceID));
                 } else {
-                    notifyUIUpdate(NotifyType.ToastMessage, String.format("服务器最新数据采集时间 %s", serverLatestTimeSliceIDLong / 10000));
+                    notifyUIUpdate(NotifyType.ToastMessage, String.format(Locale.CHINA, "服务器最新数据采集时间 %s", serverLatestTimeSliceIDLong / 10000));
                 }
             }
         } else if (requestTag.equals(DataConst.RequestTag.REQUEST_UPLOAD_LANE_CHANGE_INFO_TAG)) { // 上传变道数据
@@ -170,18 +180,22 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                 return;
             }
 
-            // 成功就重置重传计数
-            reUploadCount = 0;
+            // isDataUploading 的值可能在数据上传线程中被修改
+            // tempLaneChangeInfo 的数据可能在数据收集线程中被修改
+            dataUploadLock.lock();
 
             // 数据上传成功的逻辑
-            // set workflow variable
+            // 成功就重置重传计数
+            reUploadCount = 0;
             isDataUploading = false;
             laneChangeInfoData.clear();
             laneChangeInfoData.addAll(tempLaneChangeInfoData);
             tempLaneChangeInfoData = new ArrayList<>();
 
+            dataUploadLock.unlock();
+
             notifyUIUpdate(NotifyType.ToastMessage, "数据上传成功");
-            LogUtil.d(TAG, String.format("upload lane change data success, get temp data (%s)", laneChangeInfoData.size()));
+            LogUtil.d(TAG, String.format(Locale.ENGLISH, "upload lane change data success, get temp data (%s)", laneChangeInfoData.size()));
         }
 
         // 主动关闭response
@@ -196,7 +210,6 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     @Override
     public void onGyroChanged(GyroAngel gyroAngel) {
         notifyUIUpdate(NotifyType.GyroUpdate, gyroAngel.getValue());
-
     }
 
     @Override
@@ -282,20 +295,35 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     }
 
     /**
-     * 设置变道标记
+     * 设置变道开始标记
      *
      * @param isLeftChange 是否是左变道
      */
-    public void setLaneChangedFlag(boolean isLeftChange) {
+    public void setLaneChangeStartFlag(boolean isLeftChange) {
         // 变道标记
         currLaneChangeInfo.setLaneChanged(true);
         currLaneChangeInfo.setLaneChangedType(isLeftChange ? LaneChangeInfo.LaneChangeType.LEFT : LaneChangeInfo.LaneChangeType.RIGHT);
-        currLaneChangeInfo.setLaneChangedTime(DateUtil.getTimestampString(System.currentTimeMillis()));
+        currLaneChangeInfo.setLaneChangeStartTime(DateUtil.getTimestampString(System.currentTimeMillis()));
+
+        lastLaneChangedType = currLaneChangeInfo.getLaneChangedType();
+    }
+
+    /**
+     * 设置变道结束标记
+     *
+     */
+    public void setLaneChangeFinishFlag() {
+        if (!currLaneChangeInfo.isLaneChanged()) {
+            currLaneChangeInfo.setLaneChanged(true);
+            currLaneChangeInfo.setLaneChangedType(lastLaneChangedType);
+        }
+
+        currLaneChangeInfo.setLaneChangeEndTime(DateUtil.getTimestampString(System.currentTimeMillis()));
     }
 
     /**
      * 获取当前配置
-     * @return
+     * @return 当前配置 {@link DataCollectConfig}
      */
     public DataCollectConfig getCurrentConfig() {
         DataCollectConfig config = new DataCollectConfig();
@@ -317,6 +345,8 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
 
         if (!this.deviceName.equals(config.deviceName)) {
             this.deviceName = config.deviceName;
+            dataCollectService.configDeviceName(deviceName);
+
             notifyUIUpdate(NotifyType.ToastMessage, "设备名改变");
             dataProcessHandler.sendEmptyMessage(MsgDeviceNameChange);
         }
@@ -357,12 +387,17 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                 switch (msg.what) {
                     case MsgCollectData:
                         loadData();
+
+                        // isDataUploading 的值可能在网络回调线程中被修改
+                        // tempLaneChangeInfo 的数据可能在网络回调线程中被修改
+                        dataUploadLock.lock();
                         if (isDataUploading) {
                             tempLaneChangeInfoData.add(currLaneChangeInfo);
                             LogUtil.d(TAG, String.format("data uploading, data add in temp, temp size: %s", tempLaneChangeInfoData.size()));
                         } else {
                             laneChangeInfoData.add(currLaneChangeInfo);
                         }
+                        dataUploadLock.unlock();
 
                         // 如果仍然在进行数据采集
                         if (isDataCollecting) {
@@ -374,11 +409,17 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
                         break;
                     case MsgUploadData:
                         if (!isNeedUploadData) {
+                            laneChangeInfoData.clear();
+                            notifyUIUpdate(NotifyType.ToastMessage, "未开启数据上传，本次数据已清理");
                             return;
                         }
 
+                        // isDataUploading 的值可能在网络回调线程中被修改
+                        dataUploadLock.lock();
                         // set workflow variable
                         isDataUploading = true;
+                        dataUploadLock.unlock();
+
                         // 添加提示
                         notifyUIUpdate(NotifyType.ToastMessage, "数据上传中，请勿断开网络或离开本界面");
                         dataUploadService.uploadLaneChangeInfo(laneChangeInfoData, DataCollectControl.this);

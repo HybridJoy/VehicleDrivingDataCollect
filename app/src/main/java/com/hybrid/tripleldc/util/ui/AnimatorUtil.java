@@ -88,10 +88,10 @@ public class AnimatorUtil {
         return animation;
     }
 
-    public static Animation generateAlphaAnimation(float fromAlpha, float toAlpha, long duration) {
+    public static Animation generateAlphaAnimation(float fromAlpha, float toAlpha, long duration, boolean fillAfter) {
         AlphaAnimation animation = new AlphaAnimation(fromAlpha, toAlpha);
         animation.setDuration(duration);
-        animation.setFillAfter(true);
+        animation.setFillAfter(fillAfter);
         return animation;
     }
 }

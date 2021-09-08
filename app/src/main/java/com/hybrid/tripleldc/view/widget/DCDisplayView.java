@@ -83,7 +83,6 @@ public class DCDisplayView extends LinearLayout {
     public void updateGPS(double longitude, double latitude) {
         binding.textGpsLongitude.setText(String.format("%.3f", longitude));
         binding.textGpsLatitude.setText(String.format("%.3f", latitude));
-        ToastUtil.showNormalToast(String.format("经度：%s\n维度：%s", longitude, latitude));
     }
 
     private void enableBreath(boolean enable) {
@@ -97,5 +96,4 @@ public class DCDisplayView extends LinearLayout {
             binding.imgGpsBackground.clearAnimation();
         }
     }
-
 }

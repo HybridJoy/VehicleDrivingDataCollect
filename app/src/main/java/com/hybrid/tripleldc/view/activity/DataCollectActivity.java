@@ -159,7 +159,7 @@ public class DataCollectActivity extends BaseActivity {
         }
 
         @Override
-        public boolean onDCStop() {
+        public void onDCStop() {
             // 停止数据采集
             dataCollectControl.stopDataCollect();
 
@@ -167,19 +167,21 @@ public class DataCollectActivity extends BaseActivity {
             binding.dataDisplayArea.endFlush();
             binding.mainControlArea.enableMainControl(true);
             binding.mainControlArea.setControlStatus(DCMainControlView.CollectionStatus.Stop_Collect);
-
-            return true;
         }
 
         @Override
-        public void onLaneChanged(boolean isLeftChange) {
-            // 变道标记
-            dataCollectControl.setLaneChangedFlag(isLeftChange);
+        public void onLaneChangeStart(boolean isLeftChange) {
+            // 变道开始标记
+            dataCollectControl.setLaneChangeStartFlag(isLeftChange);
 
             // 操作反馈
             ToastUtil.showNormalToast(String.format("car %s lane changed", isLeftChange ? "left" : "right"));
-            // 更新UI
-            binding.mainControlArea.enableLaneChanged(true);
+        }
+
+        @Override
+        public void onLaneChangeFinish() {
+            // 变道结束标记
+            dataCollectControl.setLaneChangeFinishFlag();
         }
 
         @Override

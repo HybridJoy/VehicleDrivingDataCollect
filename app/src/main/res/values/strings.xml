@@ -40,6 +40,7 @@
     <string name="data_collecting">Collecting</string>
     <string name="left_lane_changed">L-Lane Changed</string>
     <string name="right_lane_changed">R-Lane Changed</string>
+    <string name="lane_change_finish">Lane Change Finish</string>
 
 
     <!-- data collect display -->

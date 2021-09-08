@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.Build;
 import android.provider.Settings;
 import android.widget.Toast;
 
@@ -19,8 +18,7 @@ import java.lang.ref.WeakReference;
 public class GPSLocationManager {
     private static final String TAG = "GPSLocationManager";
     private static GPSLocationManager gpsLocationManager;
-    private static Object objLock = new Object();
-    private boolean isGpsEnabled;
+    private static final Object objLock = new Object();
     private static String mLocateType;
     private WeakReference<Context> mContext;
     private LocationManager locationManager;
@@ -41,7 +39,7 @@ public class GPSLocationManager {
             locationManager = (LocationManager) (mContext.get().getSystemService(Context.LOCATION_SERVICE));
         }
         // 定位类型：GPS
-        mLocateType = locationManager.GPS_PROVIDER;
+        mLocateType = LocationManager.GPS_PROVIDER;
         // 默认不引导打开GPS设置面板
         isGuideOPenGps = false;
         // 默认定位时间间隔为1000ms
@@ -82,7 +80,7 @@ public class GPSLocationManager {
     /**
      * 方法描述：开启定位（默认情况下不会强制要求用户打开GPS设置面板）
      *
-     * @param gpsLocationListener
+     * @param gpsLocationListener GPS定位监听回调
      */
     public void start(GPSLocationListener gpsLocationListener) {
         this.start(gpsLocationListener, isGuideOPenGps);
@@ -91,7 +89,7 @@ public class GPSLocationManager {
     /**
      * 方法描述：开启定位
      *
-     * @param gpsLocationListener
+     * @param gpsLocationListener GPS监听回调
      * @param isGuideOPenGps  当用户GPS未开启时是否引导用户开启GPS
      * @return 定位服务是否开启成功
      */
@@ -101,7 +99,7 @@ public class GPSLocationManager {
             return false;
         }
         mGPSLocation = new GPSLocation(gpsLocationListener);
-        isGpsEnabled = locationManager.isProviderEnabled(GPS_LOCATION_NAME);
+        boolean isGpsEnabled = locationManager.isProviderEnabled(GPS_LOCATION_NAME);
         if (!isGpsEnabled) {
             if (this.isGuideOPenGps) {
                 openGPS();
@@ -132,11 +130,9 @@ public class GPSLocationManager {
      */
     public void openGPS() {
         Toast.makeText(mContext.get(), "请打开GPS设置", Toast.LENGTH_SHORT).show();
-        if (Build.VERSION.SDK_INT > 15) {
-            Intent intent = new Intent(
-                    Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-            mContext.get().startActivity(intent);
-        }
+        Intent intent = new Intent(
+                Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        mContext.get().startActivity(intent);
     }
 
     /**

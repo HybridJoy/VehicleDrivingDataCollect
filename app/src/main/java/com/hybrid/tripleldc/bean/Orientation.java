@@ -1,17 +1,19 @@
 package com.hybrid.tripleldc.bean;
 
 
+import com.hybrid.tripleldc.bean.base.BaseSensorData;
+
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Author: Tasun
  * Time: 2020/8/7-20:09:13
  */
-public class Orientation {
-    private int id;
+public class Orientation extends BaseSensorData {
     private double xComponent;
     private double yComponent;
     private double zComponent;
     private int tag; // 1 为加速度计回调 2 为磁场传感器回调
-    private String sampleTime;
 
     public Orientation() {
 
@@ -20,7 +22,7 @@ public class Orientation {
     /**
      * 方向三维读数 double[]大小必须为3，且以z,x,y的顺序存值
      *
-     * @param orientation
+     * @param orientation 方向三维读数
      */
     public Orientation(double[] orientation) {
         setValue(orientation);
@@ -29,7 +31,7 @@ public class Orientation {
     /**
      * 方向三维读数 double[]大小必须为3，且以z,x,y的顺序存值
      *
-     * @param orientation
+     * @param orientation 方向三维读数
      */
     public void setValue(double[] orientation) {
         zComponent = orientation[0];
@@ -39,14 +41,6 @@ public class Orientation {
 
     public Double[] getValue() {
         return new Double[]{truncation(xComponent), truncation(yComponent), truncation(zComponent), (double) getTag()};
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public double getXComponent() {
@@ -73,14 +67,6 @@ public class Orientation {
         this.zComponent = zComponent;
     }
 
-    public String getSampleTime() {
-        return sampleTime;
-    }
-
-    public void setSampleTime(String sampleTime) {
-        this.sampleTime = sampleTime;
-    }
-
     public int getTag() {
         return tag;
     }
@@ -93,6 +79,7 @@ public class Orientation {
         return ((double) Math.round(a * 1000)) / 1000;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "Orientation{" +

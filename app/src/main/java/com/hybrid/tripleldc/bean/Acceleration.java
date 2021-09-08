@@ -1,16 +1,18 @@
 package com.hybrid.tripleldc.bean;
 
 
+import com.hybrid.tripleldc.bean.base.BaseSensorData;
+
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Author: Tasun
  * Time: 2020/8/7-20:09:25
  */
-public class Acceleration {
-    private int id;
+public class Acceleration extends BaseSensorData {
     private float xComponent;
     private float yComponent;
     private float zComponent;
-    private String sampleTime;
 
     public Acceleration() {
 
@@ -19,7 +21,7 @@ public class Acceleration {
     /**
      * 加速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
      *
-     * @param acceleration
+     * @param acceleration 加速度三维读数
      */
     public Acceleration(float[] acceleration) {
         setValue(acceleration);
@@ -28,7 +30,7 @@ public class Acceleration {
     /**
      * 加速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
      *
-     * @param acceleration
+     * @param acceleration 加速度三维读数
      */
     public void setValue(float[] acceleration) {
         xComponent = acceleration[0];
@@ -38,14 +40,6 @@ public class Acceleration {
 
     public Float[] getValue() {
         return new Float[]{truncation(xComponent), truncation(yComponent), truncation(zComponent)};
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public float getXComponent() {
@@ -72,18 +66,11 @@ public class Acceleration {
         this.zComponent = zComponent;
     }
 
-    public String getSampleTime() {
-        return sampleTime;
-    }
-
-    public void setSampleTime(String sampleTime) {
-        this.sampleTime = sampleTime;
-    }
-
     public float truncation(float a) {
         return ((float) Math.round(a * 1000)) / 1000;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return "Acceleration{" +

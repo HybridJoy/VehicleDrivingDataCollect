@@ -1,6 +1,8 @@
 package com.hybrid.tripleldc.bean;
 
 
+import com.hybrid.tripleldc.bean.base.BaseSensorData;
+
 /**
  * Author: Joy
  * Created Time: 2021/7/14-10:40
@@ -10,14 +12,11 @@ package com.hybrid.tripleldc.bean;
  * <p>
  * Describe:
  */
-public class GPSPosition {
-    private int id;
+public class GPSPosition extends BaseSensorData {
     // 经度
     private double longitude;
     // 维度
     private double latitude;
-    // 时间戳
-    private String sampleTime;
 
     public GPSPosition(double longitude, double latitude) {
         this.longitude = longitude;
@@ -26,14 +25,6 @@ public class GPSPosition {
 
     public Double[] getValue() {
         return new Double[]{longitude, latitude};
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public double getLongitude() {
@@ -50,13 +41,5 @@ public class GPSPosition {
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
-    }
-
-    public String getSampleTime() {
-        return sampleTime;
-    }
-
-    public void setSampleTime(String sampleTime) {
-        this.sampleTime = sampleTime;
     }
 }

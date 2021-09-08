@@ -13,6 +13,7 @@ import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.bean.GyroAngel;
 import com.hybrid.tripleldc.bean.Orientation;
+import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.location.GPSLocationListener;
 import com.hybrid.tripleldc.util.location.GPSLocationManager;
@@ -35,6 +36,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     private boolean enableService = false;
     private int sensorFrequency = BaseSensor.Default_Frequency;
+    private String deviceName = DataConst.System.DEFAULT_DEVICE_NAME;
 
     private boolean isSensorActivated = false; // 传感器是否激活
     private AccelerationSensor mAccelerationSensor; // 加速度传感器
@@ -42,7 +44,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     private OrientSensor mOrientSensor; // 方向传感器
 
     private boolean isGPSLocationOpened = false; // 定位服务是否开启成功
-    private GPSLocationManager gpsLocationManager;
+    private GPSLocationManager gpsLocationManager; // GPS定位传感器
 
     List<Acceleration> accelerations = new ArrayList<>(); // 加速度传感器数据
     List<Orientation> orientations = new ArrayList<>(); // 方向传感器数据
@@ -66,6 +68,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      */
     @Override
     public void Acceleration(Acceleration acceleration) {
+        acceleration.setDeviceName(deviceName);
         accelerations.add(acceleration);
         if (dataChangeCallback != null) {
             dataChangeCallback.onAccChanged(acceleration);
@@ -79,6 +82,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      */
     @Override
     public void Orient(Orientation orientation) {
+        orientation.setDeviceName(deviceName);
         orientations.add(orientation);
     }
 
@@ -89,6 +93,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      */
     @Override
     public void Gyro(GyroAngel gyro) {
+        gyro.setDeviceName(deviceName);
         gyroAngels.add(gyro);
         if (dataChangeCallback != null) {
             dataChangeCallback.onGyroChanged(gyro);
@@ -105,6 +110,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         // todo 这里损失了很多数据，可以作为一个优化点
         GPSPosition position = new GPSPosition(location.getLongitude(), location.getLatitude());
         position.setSampleTime(DateUtil.getTimestampString(location.getTime()));
+        position.setDeviceName(deviceName);
         gpsPositions.add(position);
         if (dataChangeCallback != null) {
             dataChangeCallback.onGPSChanged(position);
@@ -330,6 +336,15 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         mGyroSensor.setFrequency(sensorFrequency);
 
         LogUtil.d(TAG, "sensor frequency change to " + frequency);
+    }
+
+    /**
+     * 配置设备名
+     * @param name 需要设置的设备名称
+     */
+    public void configDeviceName(String name) {
+        this.deviceName = name;
+        LogUtil.d(TAG, "device name change to " + deviceName);
     }
 
     /**

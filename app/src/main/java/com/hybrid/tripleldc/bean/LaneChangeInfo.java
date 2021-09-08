@@ -26,10 +26,12 @@ public class LaneChangeInfo {
     private String endTime;
     // 时间片内是否变道
     private boolean isLaneChanged = false;
-    // 变道时间
-    private String laneChangedTime;
+    // 变道开始时间
+    private String laneChangeStartTime;
+    // 变道结束时间
+    private String laneChangeEndTime;
     // 变道类型 1 左变道 2 右变道 0 无变道类型数据
-    private int laneChangedType = 0;
+    private int laneChangedType = LaneChangeType.NO_TYPE;
     // 时间片内的加速度读数
     private List<Acceleration> accelerationData;
     // 时间片内的角速度读数
@@ -118,12 +120,20 @@ public class LaneChangeInfo {
         isLaneChanged = laneChanged;
     }
 
-    public String getLaneChangedTime() {
-        return laneChangedTime;
+    public String getLaneChangeStartTime() {
+        return laneChangeStartTime;
     }
 
-    public void setLaneChangedTime(String laneChangedTime) {
-        this.laneChangedTime = laneChangedTime;
+    public void setLaneChangeStartTime(String laneChangeStartTime) {
+        this.laneChangeStartTime = laneChangeStartTime;
+    }
+
+    public String getLaneChangeEndTime() {
+        return laneChangeEndTime;
+    }
+
+    public void setLaneChangeEndTime(String laneChangeEndTime) {
+        this.laneChangeEndTime = laneChangeEndTime;
     }
 
     public int getLaneChangedType() {

@@ -1,5 +1,6 @@
 package com.hybrid.tripleldc.view.widget;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -39,7 +40,8 @@ public class MainControlView extends LinearLayout {
         void onLocalization();
     }
 
-    private OnClickListener onClickListener = new OnClickListener() {
+    private final OnClickListener onClickListener = new OnClickListener() {
+        @SuppressLint("NonConstantResourceId")
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
@@ -89,8 +91,8 @@ public class MainControlView extends LinearLayout {
         binding = ViewMainControlBinding.inflate(LayoutInflater.from(context), MainControlView.this, true);
 
         // init Animation
-        operationAppearAnimation = AnimatorUtil.generateAlphaAnimation(0.0f, 1.0f, 1000);
-        operationResetAnimation = AnimatorUtil.generateAlphaAnimation(1.0f, 0.0f, 1000);
+        operationAppearAnimation = AnimatorUtil.generateAlphaAnimation(0.0f, 1.0f, 1000, false);
+        operationResetAnimation = AnimatorUtil.generateAlphaAnimation(1.0f, 0.0f, 1000, false);
 
         // init click listener
         binding.imgMainMenu.setOnClickListener(onClickListener);
