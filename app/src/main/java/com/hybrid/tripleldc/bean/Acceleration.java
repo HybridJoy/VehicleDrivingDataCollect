@@ -1,15 +1,22 @@
 package com.hybrid.tripleldc.bean;
 
-
-import com.hybrid.tripleldc.bean.base.BaseSensorData;
-
 import org.jetbrains.annotations.NotNull;
+
+import io.realm.RealmModel;
+import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmClass;
 
 /**
  * Author: Tasun
  * Time: 2020/8/7-20:09:25
  */
-public class Acceleration extends BaseSensorData {
+@RealmClass
+public class Acceleration implements RealmModel {
+    @PrimaryKey
+    private int id;
+    protected String sampleTime;
+    private String deviceName;
+
     private float xComponent;
     private float yComponent;
     private float zComponent;
@@ -40,6 +47,30 @@ public class Acceleration extends BaseSensorData {
 
     public Float[] getValue() {
         return new Float[]{truncation(xComponent), truncation(yComponent), truncation(zComponent)};
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getSampleTime() {
+        return sampleTime;
+    }
+
+    public void setSampleTime(String sampleTime) {
+        this.sampleTime = sampleTime;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public float getXComponent() {

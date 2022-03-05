@@ -2,6 +2,9 @@ package com.hybrid.tripleldc.global;
 
 import android.app.Application;
 
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+
 public class App extends Application {
     private static final String TAG = "App";
 
@@ -15,5 +18,10 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         sInstance = this;
+
+        // Init Realm
+        Realm.init(this);
+        RealmConfiguration config = new RealmConfiguration.Builder().name("triple_ldc.realm").build();
+        Realm.setDefaultConfiguration(config);
     }
 }

@@ -1,15 +1,22 @@
 package com.hybrid.tripleldc.bean;
 
-
-import com.hybrid.tripleldc.bean.base.BaseSensorData;
-
 import org.jetbrains.annotations.NotNull;
+
+import io.realm.RealmModel;
+import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmClass;
 
 /**
  * Author: Tasun
  * Time: 2020/8/7-20:09:13
  */
-public class Orientation extends BaseSensorData {
+@RealmClass
+public class Orientation implements RealmModel {
+    @PrimaryKey
+    private int id;
+    protected String sampleTime;
+    private String deviceName;
+
     private double xComponent;
     private double yComponent;
     private double zComponent;
@@ -41,6 +48,30 @@ public class Orientation extends BaseSensorData {
 
     public Double[] getValue() {
         return new Double[]{truncation(xComponent), truncation(yComponent), truncation(zComponent), (double) getTag()};
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getSampleTime() {
+        return sampleTime;
+    }
+
+    public void setSampleTime(String sampleTime) {
+        this.sampleTime = sampleTime;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public double getXComponent() {

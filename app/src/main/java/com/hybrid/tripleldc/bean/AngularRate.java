@@ -1,44 +1,76 @@
 package com.hybrid.tripleldc.bean;
 
-import com.hybrid.tripleldc.bean.base.BaseSensorData;
-
 import org.jetbrains.annotations.NotNull;
+
+import io.realm.RealmModel;
+import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmClass;
 
 /**
  * Author: Tasun
  * Time: 2020/8/7-20:15:06
  */
-public class GyroAngel extends BaseSensorData {
+@RealmClass
+public class AngularRate implements RealmModel {
+    @PrimaryKey
+    private int id;
+    protected String sampleTime;
+    private String deviceName;
+
     private float xComponent;
     private float yComponent;
     private float zComponent;
 
-    public GyroAngel() {
+    public AngularRate() {
 
     }
 
     /**
      * 角速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
      *
-     * @param gyroangel 角速度三维读数
+     * @param angularRates 角速度三维读数
      */
-    public GyroAngel(float[] gyroangel) {
-        setValue(gyroangel);
+    public AngularRate(float[] angularRates) {
+        setValue(angularRates);
     }
 
     /**
      * 角速度三维读数 float[]大小必须为3，且以x,y,z的顺序存值
      *
-     * @param gyroangel 角速度三维读数
+     * @param angularRates 角速度三维读数
      */
-    public void setValue(float[] gyroangel) {
-        xComponent = gyroangel[0];
-        yComponent = gyroangel[1];
-        zComponent = gyroangel[2];
+    public void setValue(float[] angularRates) {
+        xComponent = angularRates[0];
+        yComponent = angularRates[1];
+        zComponent = angularRates[2];
     }
 
     public Float[] getValue() {
         return new Float[]{truncation(xComponent), truncation(yComponent), truncation(zComponent)};
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getSampleTime() {
+        return sampleTime;
+    }
+
+    public void setSampleTime(String sampleTime) {
+        this.sampleTime = sampleTime;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public float getXComponent() {

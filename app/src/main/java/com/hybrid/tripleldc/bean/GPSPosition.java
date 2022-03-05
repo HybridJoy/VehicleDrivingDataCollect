@@ -1,7 +1,8 @@
 package com.hybrid.tripleldc.bean;
 
-
-import com.hybrid.tripleldc.bean.base.BaseSensorData;
+import io.realm.RealmModel;
+import io.realm.annotations.PrimaryKey;
+import io.realm.annotations.RealmClass;
 
 /**
  * Author: Joy
@@ -12,15 +13,49 @@ import com.hybrid.tripleldc.bean.base.BaseSensorData;
  * <p>
  * Describe:
  */
-public class GPSPosition extends BaseSensorData {
+@RealmClass
+public class GPSPosition implements RealmModel {
+    @PrimaryKey
+    private int id;
+    protected String sampleTime;
+    private String deviceName;
+
     // 经度
     private double longitude;
     // 维度
     private double latitude;
 
+    public GPSPosition() {
+
+    }
+
     public GPSPosition(double longitude, double latitude) {
         this.longitude = longitude;
         this.latitude = latitude;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getSampleTime() {
+        return sampleTime;
+    }
+
+    public void setSampleTime(String sampleTime) {
+        this.sampleTime = sampleTime;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 
     public Double[] getValue() {
