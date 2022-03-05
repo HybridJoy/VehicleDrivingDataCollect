@@ -10,24 +10,24 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-import com.hybrid.tripleldc.bean.GyroAngel;
+import com.hybrid.tripleldc.bean.Acceleration;
+import com.hybrid.tripleldc.bean.AngularRate;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
+
+import io.realm.Realm;
 
 
 public class GyroSensor extends BaseSensor {
     private static final String TAG = "GyroSensor";
-    private GyroCallBack gyroCallBack;
-    float[] gyroValues = new float[3];
-    float[] angleXYZ = new float[3];
-    private static final float NS2S = 1.0f / 1000000000.0f;
-    private float timestamp;
+    private final GyroCallBack gyroCallBack;
+    private int angularRateLatestID = -1;
 
     /**
      * 陀螺仪更新回调
      */
     public interface GyroCallBack {
-        void Gyro(GyroAngel gyro);
+        void Gyro(AngularRate gyro);
     }
 
     public GyroSensor(Context context, GyroCallBack gyroCallBack) {
@@ -64,8 +64,10 @@ public class GyroSensor extends BaseSensor {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void activeSensor() {
-        gyroValues = new float[3]; // 重置数据
-        timestamp = SystemClock.elapsedRealtimeNanos();
+        Realm realm = Realm.getDefaultInstance();
+        Number angularRateLatestID = realm.where(AngularRate.class).max("id");
+        this.angularRateLatestID = angularRateLatestID == null ? -1 : angularRateLatestID.intValue();
+        realm.close();
     }
 
     @Override
@@ -74,21 +76,11 @@ public class GyroSensor extends BaseSensor {
             // values[0] x方向上的角速度
             // values[1] y方向上的角速度
             // values[2] z方向上的角速度
-            if (timestamp != 0) {
-                // 得到两次检测到手机旋转的时间差（纳秒），并将其转化为秒
-                final float dT = (event.timestamp - timestamp) * NS2S;
-                // 将手机在各个轴上的旋转角度相加，即可得到当前位置相对于初始位置的旋转弧度
-                for (int i = 0; i <= 2; i++) {
-                    gyroValues[i] += event.values[i] * dT;
-                    // 将弧度转化为角度
-                    angleXYZ[i] = (float) Math.toDegrees(gyroValues[i]);
-                }
-
-                GyroAngel gyroAngel = new GyroAngel(angleXYZ);
-                gyroAngel.setSampleTime(DateUtil.getTimestampString(System.currentTimeMillis()));
-                gyroCallBack.Gyro(gyroAngel);
-            }
-            timestamp = event.timestamp;
+            float[] angularRateValues = event.values.clone();
+            AngularRate angularRate = new AngularRate(angularRateValues);
+            angularRate.setId(++angularRateLatestID);
+            angularRate.setSampleTime(DateUtil.getTimestampString(System.currentTimeMillis()));
+            gyroCallBack.Gyro(angularRate);
         }
     }
 

@@ -5,6 +5,12 @@ import android.location.LocationListener;
 import android.location.LocationProvider;
 import android.os.Bundle;
 
+import com.hybrid.tripleldc.bean.GPSPosition;
+import com.hybrid.tripleldc.bean.GravityAcceleration;
+import com.hybrid.tripleldc.util.system.DateUtil;
+
+import io.realm.Realm;
+
 /**
  * Author: Joy
  * Created Time: 2021/7/7-18:19
@@ -17,14 +23,25 @@ import android.os.Bundle;
 public class GPSLocation implements LocationListener {
     private GPSLocationListener mGpsLocationListener;
 
+    private int gpsPositionLatestID = -1;
+
     public GPSLocation(GPSLocationListener gpsLocationListener) {
         this.mGpsLocationListener = gpsLocationListener;
+
+        Realm realm = Realm.getDefaultInstance();
+        Number gpsPositionLatestID = realm.where(GPSPosition.class).max("id");
+        this.gpsPositionLatestID = gpsPositionLatestID == null ? -1 : gpsPositionLatestID.intValue();
+        realm.close();
     }
 
     @Override
     public void onLocationChanged(Location location) {
         if (location != null) {
-            mGpsLocationListener.UpdateLocation(location);
+            // todo 这里损失了很多数据，可以作为一个优化点
+            GPSPosition position = new GPSPosition(location.getLongitude(), location.getLatitude());
+            position.setId(++gpsPositionLatestID);
+            position.setSampleTime(DateUtil.getTimestampString(location.getTime()));
+            mGpsLocationListener.UpdateLocation(position);
         }
     }
 

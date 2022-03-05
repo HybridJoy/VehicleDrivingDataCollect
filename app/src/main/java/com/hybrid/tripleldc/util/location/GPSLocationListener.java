@@ -3,13 +3,15 @@ package com.hybrid.tripleldc.util.location;
 import android.location.Location;
 import android.os.Bundle;
 
+import com.hybrid.tripleldc.bean.GPSPosition;
+
 public interface GPSLocationListener {
     /**
      * 方法描述：位置信息发生改变时被调用
      *
-     * @param location 更新位置后的新的Location对象
+     * @param position 更新位置后的新的GPSPosition对象
      */
-    void UpdateLocation(Location location);
+    void UpdateLocation(GPSPosition position);
 
     /**
      * 方法描述：provider定位源类型变化时被调用

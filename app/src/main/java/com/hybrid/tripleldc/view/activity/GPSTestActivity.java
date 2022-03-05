@@ -1,12 +1,12 @@
 package com.hybrid.tripleldc.view.activity;
 
 import android.Manifest;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
 import com.hybrid.tripleldc.R;
+import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.databinding.ActivityGpsTestBinding;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.location.GPSLocationListener;
@@ -39,13 +39,13 @@ public class GPSTestActivity extends BaseActivity implements GPSLocationListener
     /**
      * GPS更新回调
      *
-     * @param location 更新位置后的新的Location对象
+     * @param position 更新位置后的新的Location对象
      */
     @Override
-    public void UpdateLocation(Location location) {
-        binding.timeTxt.setText(String.format("时间：%s", location.getTime()));
-        binding.longitudeText.setText(String.format("经度：%s", location.getLongitude()));
-        binding.latitudeText.setText(String.format("纬度：%s", location.getLatitude()));
+    public void UpdateLocation(GPSPosition position) {
+        binding.timeTxt.setText(String.format("时间：%s", position.getSampleTime()));
+        binding.longitudeText.setText(String.format("经度：%s", position.getLongitude()));
+        binding.latitudeText.setText(String.format("纬度：%s", position.getLatitude()));
     }
 
     @Override

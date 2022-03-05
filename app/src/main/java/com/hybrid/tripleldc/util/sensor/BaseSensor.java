@@ -14,7 +14,7 @@ import android.hardware.SensorManager;
 
 public abstract class BaseSensor implements SensorEventListener {
     private static final String TAG = "BaseSensor";
-    public static final int Default_Frequency = 2;
+    public static final int Default_Frequency = 1;
 
     // 频率控制
     private int frequency = Default_Frequency;

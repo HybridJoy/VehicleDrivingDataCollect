@@ -10,6 +10,8 @@ import com.hybrid.tripleldc.bean.Orientation;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
+import io.realm.Realm;
+
 
 /**
  * 方向传感器
@@ -17,10 +19,10 @@ import com.hybrid.tripleldc.util.system.DateUtil;
 
 public class OrientSensor extends BaseSensor {
     private static final String TAG = "OrientSensor";
-    private OrientCallBack orientCallBack;
-    float[] accelerometerValues = new float[3];
-    float[] magneticValues = new float[3];
-    double[] orientValues = new double[3];
+    private final OrientCallBack orientCallBack;
+    private float[] accelerometerValues = new float[3];
+    private float[] magneticValues = new float[3];
+    private int orientationLatestID = -1;
 
     public interface OrientCallBack {
         /**
@@ -71,7 +73,10 @@ public class OrientSensor extends BaseSensor {
 
     @Override
     protected void activeSensor() {
-
+        Realm realm = Realm.getDefaultInstance();
+        Number orientationLatestID = realm.where(Orientation.class).max("id");
+        this.orientationLatestID = orientationLatestID == null ? -1 : orientationLatestID.intValue();
+        realm.close();
     }
 
     @Override
@@ -109,12 +114,15 @@ public class OrientSensor extends BaseSensor {
         double pitch = Math.toDegrees(values[1]);
         double roll = Math.toDegrees(values[2]);
 
+        double[] orientValues = new double[3];
+
         orientValues[0] = azimuth;
         orientValues[1] = pitch;
         orientValues[2] = roll;
 
         Orientation orientation = new Orientation(orientValues);
         orientation.setTag(tag);
+        orientation.setId(++orientationLatestID);
         orientation.setSampleTime(DateUtil.getTimestampString(System.currentTimeMillis()));
         orientCallBack.Orient(orientation);
     }

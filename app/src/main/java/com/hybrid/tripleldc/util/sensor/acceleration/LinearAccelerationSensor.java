@@ -5,27 +5,35 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 
-import com.hybrid.tripleldc.bean.Acceleration;
+import com.hybrid.tripleldc.bean.LinearAcceleration;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
 import io.realm.Realm;
 
-
-public class AccelerationSensor extends BaseSensor {
-    private static final String TAG = "AccelerationSensor";
-    private final AccelerationCallback accelerationCallback;
-    private int accelerationLatestID = -1;
+/**
+ * Author: Joy
+ * Created Time: 2022/3/5-17:14
+ * <p>
+ * Tips: (if you changed this file, leave your footprint
+ * like this: modified by xxx in 2022/3/5 )
+ * <p>
+ * Describe:
+ */
+public class LinearAccelerationSensor extends BaseSensor {
+    private static final String TAG = "LinearAccelerationSensor";
+    private final LinearAccelerationCallback accelerationCallback;
+    private int linearAccelerationLatestID = -1;
 
     /**
      * 更新回调
      */
-    public interface AccelerationCallback {
-        void Acceleration(Acceleration acceleration);
+    public interface LinearAccelerationCallback {
+        void LinearAcceleration(LinearAcceleration acceleration);
     }
 
-    public AccelerationSensor(Context context, AccelerationCallback callback) {
+    public LinearAccelerationSensor(Context context, LinearAccelerationCallback callback) {
         super(context);
         this.accelerationCallback = callback;
     }
@@ -33,8 +41,8 @@ public class AccelerationSensor extends BaseSensor {
     @Override
     protected void activeSensor() {
         Realm realm = Realm.getDefaultInstance();
-        Number accelerationLatestID = realm.where(Acceleration.class).max("id");
-        this.accelerationLatestID = accelerationLatestID == null ? -1: accelerationLatestID.intValue();
+        Number linearAccelerationLatestID = realm.where(LinearAcceleration.class).max("id");
+        this.linearAccelerationLatestID = linearAccelerationLatestID == null ? -1: linearAccelerationLatestID.intValue();
         realm.close();
     }
 
@@ -45,10 +53,10 @@ public class AccelerationSensor extends BaseSensor {
             // values[1]  y方向加速度
             // values[2]  z方向加速度
             float[] accelerationValues = event.values.clone();
-            Acceleration acceleration = new Acceleration(accelerationValues);
-            acceleration.setId(++accelerationLatestID);
+            LinearAcceleration acceleration = new LinearAcceleration(accelerationValues);
+            acceleration.setId(++linearAccelerationLatestID);
             acceleration.setSampleTime(DateUtil.getTimestampString(System.currentTimeMillis()));
-            accelerationCallback.Acceleration(acceleration);
+            accelerationCallback.LinearAcceleration(acceleration);
         }
     }
 
@@ -58,7 +66,7 @@ public class AccelerationSensor extends BaseSensor {
     }
 
     /**
-     * 注册加速度传感器
+     * 注册线性加速度传感器
      *
      * @return 是否支持
      */
@@ -66,11 +74,11 @@ public class AccelerationSensor extends BaseSensor {
         isAvailable = true;
 
         // 注册加速度传感器
-        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
                 SensorManager.SENSOR_DELAY_GAME)) {
-            LogUtil.i(TAG, "加速度传感器可用！");
+            LogUtil.i(TAG, "线性加速度传感器可用！");
         } else {
-            LogUtil.i(TAG, "加速度传感器不可用！");
+            LogUtil.i(TAG, "线性加速度传感器不可用！");
             isAvailable = false;
         }
         return isAvailable;

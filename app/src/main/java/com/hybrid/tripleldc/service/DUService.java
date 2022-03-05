@@ -8,7 +8,7 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
-import com.hybrid.tripleldc.bean.GyroAngel;
+import com.hybrid.tripleldc.bean.AngularRate;
 import com.hybrid.tripleldc.bean.LaneChangeInfo;
 import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.util.io.LogUtil;
@@ -181,17 +181,17 @@ public class DUService extends Service {
     /**
      * 测试用接口
      *
-     * @param gyroAngels 角速度数据
+     * @param angularRates 角速度数据
      * @param callback   http回调
      */
-    public void uploadGyroTest(List<GyroAngel> gyroAngels, Callback callback) {
+    public void uploadGyroTest(List<AngularRate> angularRates, Callback callback) {
         if (!enableService) {
             LogUtil.i(TAG, "enable service first");
             return;
         }
 
         LogUtil.i(TAG, "uploadGyroTest");
-        String json = gson.toJson(gyroAngels);
+        String json = gson.toJson(angularRates);
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder()
                 .url(SERVER_URL + DataConst.Request.REQUEST_UPLOAD_GYRO_TEST)

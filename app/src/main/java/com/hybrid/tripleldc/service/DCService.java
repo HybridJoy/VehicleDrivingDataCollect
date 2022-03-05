@@ -2,7 +2,6 @@ package com.hybrid.tripleldc.service;
 
 import android.app.Service;
 import android.content.Intent;
-import android.location.Location;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -11,7 +10,8 @@ import androidx.annotation.Nullable;
 
 import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.GPSPosition;
-import com.hybrid.tripleldc.bean.GyroAngel;
+import com.hybrid.tripleldc.bean.AngularRate;
+import com.hybrid.tripleldc.bean.GravityAcceleration;
 import com.hybrid.tripleldc.bean.Orientation;
 import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.util.io.LogUtil;
@@ -20,9 +20,9 @@ import com.hybrid.tripleldc.util.location.GPSLocationManager;
 import com.hybrid.tripleldc.util.location.GPSProviderStatus;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.sensor.acceleration.AccelerationSensor;
+import com.hybrid.tripleldc.util.sensor.gravity.GravitySensor;
 import com.hybrid.tripleldc.util.sensor.gyroscope.GyroSensor;
 import com.hybrid.tripleldc.util.sensor.orientation.OrientSensor;
-import com.hybrid.tripleldc.util.system.DateUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,7 @@ import java.util.List;
 public class DCService extends Service implements AccelerationSensor.AccelerationCallback,
         OrientSensor.OrientCallBack,
         GyroSensor.GyroCallBack,
+        GravitySensor.GravityCallback,
         GPSLocationListener {
 
     private static final String TAG = "DataCollectService";
@@ -40,15 +41,18 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     private boolean isSensorActivated = false; // 传感器是否激活
     private AccelerationSensor mAccelerationSensor; // 加速度传感器
+
     private GyroSensor mGyroSensor; // 陀螺仪传感器
     private OrientSensor mOrientSensor; // 方向传感器
+    private GravitySensor mGravitySensor; // 重力传感器
 
     private boolean isGPSLocationOpened = false; // 定位服务是否开启成功
     private GPSLocationManager gpsLocationManager; // GPS定位传感器
 
     List<Acceleration> accelerations = new ArrayList<>(); // 加速度传感器数据
     List<Orientation> orientations = new ArrayList<>(); // 方向传感器数据
-    List<GyroAngel> gyroAngels = new ArrayList<>(); // 陀螺仪数据
+    List<AngularRate> angularRates = new ArrayList<>(); // 陀螺仪数据
+    List<GravityAcceleration> gravityAccelerations = new ArrayList<>(); // 重力加速度数据
     List<GPSPosition> gpsPositions = new ArrayList<>(); // GPS数据
 
     private DataChangeCallback dataChangeCallback;
@@ -56,7 +60,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     public interface DataChangeCallback {
         void onAccChanged(Acceleration acceleration);
 
-        void onGyroChanged(GyroAngel gyroAngel);
+        void onGyroChanged(AngularRate angularRate);
 
         void onGPSChanged(GPSPosition position);
     }
@@ -92,24 +96,33 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      * @param gyro 角速度
      */
     @Override
-    public void Gyro(GyroAngel gyro) {
+    public void Gyro(AngularRate gyro) {
         gyro.setDeviceName(deviceName);
-        gyroAngels.add(gyro);
+        angularRates.add(gyro);
         if (dataChangeCallback != null) {
             dataChangeCallback.onGyroChanged(gyro);
         }
     }
 
     /**
+     * 重力传感器更新回调
+     *
+     * @param gravityAcceleration
+     */
+
+    @Override
+    public void Gravity(GravityAcceleration gravityAcceleration) {
+        gravityAcceleration.setDeviceName(deviceName);
+        gravityAccelerations.add(gravityAcceleration);
+    }
+
+    /**
      * GPS更新回调
      *
-     * @param location 更新位置后的新的Location对象
+     * @param position 更新位置后的新的GPSPosition对象
      */
     @Override
-    public void UpdateLocation(Location location) {
-        // todo 这里损失了很多数据，可以作为一个优化点
-        GPSPosition position = new GPSPosition(location.getLongitude(), location.getLatitude());
-        position.setSampleTime(DateUtil.getTimestampString(location.getTime()));
+    public void UpdateLocation(GPSPosition position) {
         position.setDeviceName(deviceName);
         gpsPositions.add(position);
         if (dataChangeCallback != null) {
@@ -168,6 +181,8 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         mOrientSensor.registerOrient();
         mGyroSensor = new GyroSensor(this, this);
         mGyroSensor.registerGyro();
+        mGravitySensor = new GravitySensor(this, this);
+        mGravitySensor.registerGravitySensor();
 
         // open gps location
         gpsLocationManager = GPSLocationManager.getInstances(this);
@@ -185,6 +200,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         mAccelerationSensor.unregisterAccelerometer();
         mOrientSensor.unregisterOrient();
         mGyroSensor.unregisterGyro();
+        mGravitySensor.unregisterGravitySensor();
 
         gpsLocationManager.stop();
         LogUtil.d(TAG, "onDestroy executed");
@@ -198,7 +214,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     public void enableService(boolean enable) {
         enableService = enable;
     }
-    
+
     /**
      * 数据收集服务是否开始
      * 由传感器是否激活和GPS定位是否正常开启来判断
@@ -229,8 +245,9 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         boolean isAcceleratorActivated = mAccelerationSensor.setSensorState(true);
         boolean isOrientActivated = mOrientSensor.setSensorState(true);
         boolean isGyroActivated = mGyroSensor.setSensorState(true);
+        boolean isGravityActivated = mGravitySensor.setSensorState(true);
 
-        isSensorActivated = isAcceleratorActivated && isGyroActivated && isOrientActivated;
+        isSensorActivated = isAcceleratorActivated && isGyroActivated && isOrientActivated && isGravityActivated;
         LogUtil.d(TAG, String.format("activate sensors %s, current sensor frequency: %s", isSensorActivated, sensorFrequency));
 
         // activate gps
@@ -246,6 +263,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
                 mAccelerationSensor.setSensorState(false);
                 mOrientSensor.setSensorState(false);
                 mGyroSensor.setSensorState(false);
+                mGravitySensor.setSensorState(false);
             }
 
             if (isGPSLocationOpened) {
@@ -265,6 +283,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         mAccelerationSensor.setSensorState(false);
         mOrientSensor.setSensorState(false);
         mGyroSensor.setSensorState(false);
+        mGravitySensor.setSensorState(false);
         gpsLocationManager.stop();
 
         isSensorActivated = false;
@@ -301,9 +320,19 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      *
      * @return 返回时间片内缓存的角速度数据
      */
-    public List<GyroAngel> getGyroAngel() {
-        LogUtil.d(TAG, "gyroAngels size: " + gyroAngels.size());
-        return gyroAngels;
+    public List<AngularRate> getAngularRate() {
+        LogUtil.d(TAG, "angularRate size: " + angularRates.size());
+        return angularRates;
+    }
+
+    /**
+     * 获取重力加速度数据
+     *
+     * @return 返回时间片内缓存的重力加速度数据
+     */
+    public List<GravityAcceleration> getGravityAcceleration() {
+        LogUtil.d(TAG, "gravity acceleration size: " + gravityAccelerations.size());
+        return gravityAccelerations;
     }
 
     /**
@@ -318,6 +347,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     /**
      * 获取传感器频率
+     *
      * @return 传感器频率
      */
     public int getSensorFrequency() {
@@ -340,6 +370,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     /**
      * 配置设备名
+     *
      * @param name 需要设置的设备名称
      */
     public void configDeviceName(String name) {
@@ -355,7 +386,8 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         // inertial sensors data clear
         accelerations = new ArrayList<>();
         orientations = new ArrayList<>();
-        gyroAngels = new ArrayList<>();
+        angularRates = new ArrayList<>();
+        gravityAccelerations = new ArrayList<>();
 
         // GPS sensor data clear
         gpsPositions = new ArrayList<>();
@@ -364,6 +396,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
         mAccelerationSensor.resetFrequencyCount();
         mOrientSensor.resetFrequencyCount();
         mGyroSensor.resetFrequencyCount();
+        mGravitySensor.resetFrequencyCount();
     }
 
     public void setDataChangeCallback(DataChangeCallback dataChangeCallback) {

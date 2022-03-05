@@ -7,7 +7,7 @@ import android.os.Message;
 import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.DataCollectConfig;
 import com.hybrid.tripleldc.bean.GPSPosition;
-import com.hybrid.tripleldc.bean.GyroAngel;
+import com.hybrid.tripleldc.bean.AngularRate;
 import com.hybrid.tripleldc.bean.LaneChangeInfo;
 import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.config.UIConst;
@@ -208,8 +208,8 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     }
 
     @Override
-    public void onGyroChanged(GyroAngel gyroAngel) {
-        notifyUIUpdate(NotifyType.GyroUpdate, gyroAngel.getValue());
+    public void onGyroChanged(AngularRate angularRate) {
+        notifyUIUpdate(NotifyType.GyroUpdate, angularRate.getValue());
     }
 
     @Override
@@ -452,7 +452,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
      */
     private void loadData() {
         currLaneChangeInfo.setAccelerationData(dataCollectService.getAcceleration());
-        currLaneChangeInfo.setGyroAngelData(dataCollectService.getGyroAngel());
+        currLaneChangeInfo.setGyroAngelData(dataCollectService.getAngularRate());
         currLaneChangeInfo.setOrientationData(dataCollectService.getOrientation());
         currLaneChangeInfo.setGpsPositionData(dataCollectService.getGPSPosition());
         currLaneChangeInfo.setEndTime(DateUtil.getTimestampString(System.currentTimeMillis()));

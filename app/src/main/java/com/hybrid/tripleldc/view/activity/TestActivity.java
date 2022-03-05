@@ -10,7 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import com.hybrid.tripleldc.R;
-import com.hybrid.tripleldc.bean.GyroAngel;
+import com.hybrid.tripleldc.bean.AngularRate;
 import com.hybrid.tripleldc.databinding.ActivityTestBinding;
 import com.hybrid.tripleldc.service.DCService;
 import com.hybrid.tripleldc.service.DUService;
@@ -61,8 +61,8 @@ public class TestActivity extends BaseActivity {
                     mDCService.endDC();
                     break;
                 case R.id.btn_data_upload:
-                    List<GyroAngel> gyroAngels = mDCService.getGyroAngel();
-                    mDUService.uploadGyroTest(gyroAngels, httpCallback);
+                    List<AngularRate> angularRates = mDCService.getAngularRate();
+                    mDUService.uploadGyroTest(angularRates, httpCallback);
                     break;
                 default:
                     break;

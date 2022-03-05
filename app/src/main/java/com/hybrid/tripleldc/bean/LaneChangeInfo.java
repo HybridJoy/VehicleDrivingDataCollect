@@ -35,7 +35,7 @@ public class LaneChangeInfo {
     // 时间片内的加速度读数
     private List<Acceleration> accelerationData;
     // 时间片内的角速度读数
-    private List<GyroAngel> gyroAngelData;
+    private List<AngularRate> angularRateData;
     // 时间片内的方向读数
     private List<Orientation> orientationData;
     // 时间片内的GPS读数
@@ -152,12 +152,12 @@ public class LaneChangeInfo {
         this.accelerationData = accelerationData;
     }
 
-    public List<GyroAngel> getGyroAngelData() {
-        return gyroAngelData;
+    public List<AngularRate> getGyroAngelData() {
+        return angularRateData;
     }
 
-    public void setGyroAngelData(List<GyroAngel> gyroAngelData) {
-        this.gyroAngelData = gyroAngelData;
+    public void setGyroAngelData(List<AngularRate> angularRateData) {
+        this.angularRateData = angularRateData;
     }
 
     public List<Orientation> getOrientationData() {
