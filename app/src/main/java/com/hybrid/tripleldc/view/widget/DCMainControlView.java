@@ -161,6 +161,15 @@ public class DCMainControlView extends LinearLayout {
         binding.imgMainControlBackground.setEnabled(enable);
     }
 
+    public void enableLaneChangeOperationArea(boolean enable) {
+        binding.textLeftLaneChange.setEnabled(enable);
+        binding.imgLeftLaneChangeBackground.setEnabled(enable);
+        binding.textRightLaneChange.setEnabled(enable);
+        binding.imgRightLaneChangeBackground.setEnabled(enable);
+        binding.textLaneChangeFinish.setEnabled(enable);
+        binding.imgLaneChangeFinishBackground.setEnabled(enable);
+    }
+
     public void setControlCallback(ControlCallback controlCallback) {
         this.controlCallback = controlCallback;
     }

@@ -48,7 +48,7 @@ public class LinearAccelerationSensor extends BaseSensor {
 
     @Override
     protected void sensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+        if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
             // values[0]  x方向加速度
             // values[1]  y方向加速度
             // values[2]  z方向加速度

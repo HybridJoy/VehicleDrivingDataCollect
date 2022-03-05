@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.hybrid.tripleldc.databinding.ViewDataCollectConfigBinding;
 public class DCConfigView extends LinearLayout {
 
     ViewDataCollectConfigBinding binding;
+    private boolean enableDataUploadOptions = true;
 
     private ConfigChangeCallback configChangeCallback;
     public interface ConfigChangeCallback {
@@ -77,25 +79,53 @@ public class DCConfigView extends LinearLayout {
         this.configChangeCallback = callback;
     }
 
+    public void enableDataUploadOptions(boolean enable){
+        this.enableDataUploadOptions = enable;
+    }
+
     public void displayConfig(DataCollectConfig config) {
         binding.editDeviceName.setText(config.deviceName);
-        binding.checkboxIsUploadData.setChecked(config.isUploadData);
-        binding.checkboxIsUseTestServer.setChecked(config.isUseTestServer);
         binding.editSensorFrequency.setText(String.valueOf(config.sensorFrequency));
         binding.editDataSampleInterval.setText(String.valueOf(config.dataSampleInterval));
-        binding.editDataUploadInterval.setText(String.valueOf(config.dataUploadInterval));
-        binding.editMaxReUploadTimes.setText(String.valueOf(config.maxReUploadTimes));
+
+        if (enableDataUploadOptions) {
+            showDataUploadOptions(true);
+
+            binding.checkboxIsUploadData.setChecked(config.isUploadData);
+            binding.checkboxIsUseTestServer.setChecked(config.isUseTestServer);
+            binding.editDataUploadInterval.setText(String.valueOf(config.dataUploadInterval));
+            binding.editMaxReUploadTimes.setText(String.valueOf(config.maxReUploadTimes));
+        } else {
+            showDataUploadOptions(false);
+        }
+    }
+
+    private void showDataUploadOptions(boolean show) {
+        int visibility = show ? View.VISIBLE : View.GONE;
+
+//        binding.textIsUseTestServer.setVisibility(visibility);
+//        binding.textIsUploadData.setVisibility(visibility);
+//        binding.textDataUploadInterval.setVisibility(visibility);
+//        binding.textMaxReUploadTimes.setVisibility(visibility);
+
+        binding.checkboxIsUploadData.setVisibility(visibility);
+        binding.checkboxIsUseTestServer.setVisibility(visibility);
+        binding.editDataUploadInterval.setVisibility(visibility);
+        binding.editMaxReUploadTimes.setVisibility(visibility);
     }
 
     private DataCollectConfig readConfig() {
         DataCollectConfig config = new DataCollectConfig();
         config.deviceName = binding.editDeviceName.getText().toString();
-        config.isUploadData = binding.checkboxIsUploadData.isChecked();
-        config.isUseTestServer = binding.checkboxIsUseTestServer.isChecked();
         config.sensorFrequency = Integer.parseInt(binding.editSensorFrequency.getText().toString());
         config.dataSampleInterval = Integer.parseInt(binding.editDataSampleInterval.getText().toString());
-        config.dataUploadInterval = Integer.parseInt(binding.editDataUploadInterval.getText().toString());
-        config.maxReUploadTimes = Integer.parseInt(binding.editMaxReUploadTimes.getText().toString());
+
+        if (enableDataUploadOptions) {
+            config.isUploadData = binding.checkboxIsUploadData.isChecked();
+            config.isUseTestServer = binding.checkboxIsUseTestServer.isChecked();
+            config.dataUploadInterval = Integer.parseInt(binding.editDataUploadInterval.getText().toString());
+            config.maxReUploadTimes = Integer.parseInt(binding.editMaxReUploadTimes.getText().toString());
+        }
 
         return config;
     }

@@ -44,7 +44,17 @@
         </activity>
 
         <activity
+            android:name=".view.activity.OfflineDataCollectActivity"
+            android:launchMode="singleTask">
+        </activity>
+
+        <activity
             android:name=".view.activity.TestActivity"
+            android:launchMode="singleTask">
+        </activity>
+
+        <activity
+            android:name=".view.activity.SettingActivity"
             android:launchMode="singleTask">
         </activity>
 

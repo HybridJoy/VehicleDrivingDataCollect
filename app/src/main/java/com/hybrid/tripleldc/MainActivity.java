@@ -10,7 +10,8 @@ import com.hybrid.tripleldc.databinding.ActivityMainBinding;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.system.AppUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
-import com.hybrid.tripleldc.view.activity.DataCollectActivity;
+import com.hybrid.tripleldc.view.activity.OfflineDataCollectActivity;
+import com.hybrid.tripleldc.view.activity.SettingActivity;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
 import com.hybrid.tripleldc.view.widget.MainControlView;
 
@@ -27,7 +28,7 @@ public class MainActivity extends BaseActivity {
         @Override
         public void onDataCollection() {
             LogUtil.d(TAG, "enter DataCollectActivity");
-            startActivity(new Intent(MainActivity.this, DataCollectActivity.class));
+            startActivity(new Intent(MainActivity.this, OfflineDataCollectActivity.class));
         }
 
         @Override
@@ -47,7 +48,7 @@ public class MainActivity extends BaseActivity {
 
         // init main control callback
         binding.mainControlArea.setOperationCallback(operationCallback);
-        
+
         requestPermissions();
     }
 
@@ -67,7 +68,8 @@ public class MainActivity extends BaseActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            ToastUtil.showNormalToast("暂无配置项！");
+            LogUtil.d(TAG, "enter DataCollectActivity");
+            startActivity(new Intent(MainActivity.this, SettingActivity.class));
             return true;
         }
 

@@ -21,7 +21,12 @@ public class App extends Application {
 
         // Init Realm
         Realm.init(this);
-        RealmConfiguration config = new RealmConfiguration.Builder().name("triple_ldc.realm").build();
+        RealmConfiguration config = new RealmConfiguration.Builder()
+                .name("triple_ldc.realm")
+                .schemaVersion(1) // 数据库版本
+                .modules(new TripleLDCModule())
+                .migration(new TripleLDCMigration())
+                .build();
         Realm.setDefaultConfiguration(config);
     }
 }
