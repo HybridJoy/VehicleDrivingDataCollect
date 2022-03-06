@@ -39,7 +39,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     private static final String TAG = "DataCollectService";
 
     private boolean enableService = false;
-    private int sensorFrequency = BaseSensor.Default_Frequency;
+    private int sensorFrequency = BaseSensor.DefaultZoomOutRatio;
     private String deviceName = DataConst.System.DEFAULT_DEVICE_NAME;
 
     private boolean isSensorActivated = false; // 传感器是否激活
@@ -191,15 +191,15 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
         // register inertial sensors
         mAccelerationSensor = new AccelerationSensor(this, this);
-        mAccelerationSensor.registerAccelerometer();
+        mAccelerationSensor.register();
         mOrientSensor = new OrientSensor(this, this);
-        mOrientSensor.registerOrient();
+        mOrientSensor.register();
         mGyroSensor = new GyroSensor(this, this);
-        mGyroSensor.registerGyro();
+        mGyroSensor.register();
         mGravitySensor = new GravitySensor(this, this);
-        mGravitySensor.registerGravitySensor();
+        mGravitySensor.register();
         mLinearAccelerationSensor = new LinearAccelerationSensor(this, this);
-        mLinearAccelerationSensor.registerAccelerometer();
+        mLinearAccelerationSensor.register();
 
         // open gps location
         gpsLocationManager = GPSLocationManager.getInstances(this);
@@ -214,11 +214,11 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mAccelerationSensor.unregisterAccelerometer();
-        mOrientSensor.unregisterOrient();
-        mGyroSensor.unregisterGyro();
-        mGravitySensor.unregisterGravitySensor();
-        mLinearAccelerationSensor.unregisterAccelerometer();
+        mAccelerationSensor.unregister();
+        mOrientSensor.unregister();
+        mGyroSensor.unregister();
+        mGravitySensor.unregister();
+        mLinearAccelerationSensor.unregister();
 
         gpsLocationManager.stop();
         LogUtil.d(TAG, "onDestroy executed");
@@ -251,7 +251,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      */
     public boolean startDC() {
         if (!enableService) {
-            LogUtil.i(TAG, "enable service first");
+            LogUtil.i(TAG, "please enable service first!");
             return false;
         }
 
@@ -391,11 +391,11 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      */
     public void configSensorFrequency(int frequency) {
         this.sensorFrequency = frequency;
-        mAccelerationSensor.setFrequency(sensorFrequency);
-        mOrientSensor.setFrequency(sensorFrequency);
-        mGyroSensor.setFrequency(sensorFrequency);
-        mGravitySensor.setFrequency(sensorFrequency);
-        mLinearAccelerationSensor.setFrequency(sensorFrequency);
+        mAccelerationSensor.setZoomOutRatio(sensorFrequency);
+        mOrientSensor.setZoomOutRatio(sensorFrequency);
+        mGyroSensor.setZoomOutRatio(sensorFrequency);
+        mGravitySensor.setZoomOutRatio(sensorFrequency);
+        mLinearAccelerationSensor.setZoomOutRatio(sensorFrequency);
 
         LogUtil.d(TAG, "sensor frequency change to " + frequency);
     }

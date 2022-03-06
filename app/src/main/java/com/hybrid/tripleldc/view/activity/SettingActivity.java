@@ -1,6 +1,7 @@
 package com.hybrid.tripleldc.view.activity;
 
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,6 +32,7 @@ public class SettingActivity extends BaseActivity {
     private ActivitySettingBinding binding;
 
     private static final int MsgCleanSensorDatabase = 1;
+    private static final int MsgExportSensorDataCompleted = 2;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper()) {
         public void handleMessage(Message msg) {
@@ -39,6 +41,16 @@ public class SettingActivity extends BaseActivity {
                     cleanSensorDatabase();
                     showTipsDialog("清除成功", false);
                     break;
+                case MsgExportSensorDataCompleted:
+                    // 恢复点击
+                    binding.btnExportSensorData.setClickable(true);
+                    // 停止动画
+                    binding.loadingExportData.stopAnim();
+                    binding.loadingExportData.setVisibility(View.GONE);
+                    binding.textExporting.setVisibility(View.GONE);
+
+                    boolean result = (Boolean) msg.obj;
+                    showTipsDialog(result ? "导出成功" : "导出失败，请检查数据后重试", !result);
                 default:
                     break;
             }
@@ -49,8 +61,7 @@ public class SettingActivity extends BaseActivity {
     private final View.OnClickListener clickListener = v -> {
         switch (v.getId()) {
             case R.id.btn_export_sensor_data:
-                boolean success = exportData();
-                showTipsDialog(success ? "导出成功" : "导出失败，请检查数据后重试", !success);
+                exportData();
                 break;
             case R.id.btn_clean_sensor_database:
                 DialogInterface.OnClickListener acceptClickListener = (dialog, which) -> {
@@ -93,12 +104,16 @@ public class SettingActivity extends BaseActivity {
         binding.btnCleanSensorDatabase.setOnClickListener(clickListener);
     }
 
-    private boolean exportData() {
-        // 从数据库中读取数据
-        InertialSequence inertialSequence = RealmHelper.getInstance().loadInertialSequence();
+    private void exportData() {
+        // 避免多次点击
+        binding.btnExportSensorData.setClickable(false);
+        // 加载动画
+        binding.textExporting.setVisibility(View.VISIBLE);
+        binding.loadingExportData.setVisibility(View.VISIBLE);
+        binding.loadingExportData.startAnim(2000);
 
-        // 写文件
-        return inertialSequence.writeToFile();
+        // 执行导出任务
+        new ExportDataTask(mainHandler).execute();
     }
 
     private void cleanSensorDatabase() {
@@ -113,5 +128,38 @@ public class SettingActivity extends BaseActivity {
      */
     private void showTipsDialog(String msg, boolean isErrorMsg) {
         DialogUtil.createDialog(this, isErrorMsg ? R.string.error_dialog_title : R.string.normal_dialog_title, msg, R.string.dialog_accept, -1).show();
+    }
+
+
+    private static class ExportDataTask extends AsyncTask<Void, Void, Boolean> {
+
+        private Handler handler;
+
+        public ExportDataTask(Handler handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... arg0) {
+            // 从数据库中读取数据
+            InertialSequence inertialSequence = RealmHelper.getInstance().loadInertialSequence();
+            // 写文件
+            return inertialSequence.writeToFile();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            Message msg = new Message();
+            msg.what = MsgExportSensorDataCompleted;
+            msg.obj = result;
+            handler.sendMessageDelayed(msg, 1000);
+        }
     }
 }

@@ -3,9 +3,7 @@ package com.hybrid.tripleldc.util.sensor.acceleration;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
 
-import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.GravityAcceleration;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.io.RealmHelper;
@@ -13,8 +11,6 @@ import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
 import java.util.Locale;
-
-import io.realm.Realm;
 
 /**
  * Author: Joy
@@ -44,6 +40,23 @@ public class GravitySensor extends BaseSensor {
     }
 
     @Override
+    public void register() {
+        // 注册重力加速度传感器
+        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY), samplingPeriodUs)) {
+            LogUtil.i(TAG, "重力加速度传感器可用！");
+            isAvailable = true;
+        } else {
+            LogUtil.i(TAG, "重力加速度传感器不可用！");
+            isAvailable = false;
+        }
+    }
+
+    @Override
+    public void unregister() {
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
     protected void activeSensor() {
         this.gravityAccelerationLatestID = RealmHelper.getInstance().getInertialSensorDataLatestID(GravityAcceleration.class);
         LogUtil.d(TAG, String.format(Locale.ENGLISH, "set gravity acceleration latest id as %d", gravityAccelerationLatestID));
@@ -66,31 +79,5 @@ public class GravitySensor extends BaseSensor {
     @Override
     protected void accuracyChanged(Sensor event, int accuracy) {
 
-    }
-
-    /**
-     * 注册重力加速度传感器
-     *
-     * @return 是否支持
-     */
-    public Boolean registerGravitySensor() {
-        isAvailable = true;
-
-        // 注册加速度传感器
-        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY),
-                SensorManager.SENSOR_DELAY_GAME)) {
-            LogUtil.i(TAG, "重力加速度传感器可用！");
-        } else {
-            LogUtil.i(TAG, "重力加速度传感器不可用！");
-            isAvailable = false;
-        }
-        return isAvailable;
-    }
-
-    /**
-     * 注销重力加速度传感器监听
-     */
-    public void unregisterGravitySensor() {
-        sensorManager.unregisterListener(this);
     }
 }

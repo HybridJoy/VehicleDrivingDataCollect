@@ -14,11 +14,14 @@ import android.hardware.SensorManager;
 
 public abstract class BaseSensor implements SensorEventListener {
     private static final String TAG = "BaseSensor";
-    public static final int Default_Frequency = 1;
+    // 默认频率控制倍率为1，即以传感器以原频率进行采样
+    // 若该值不为1，如值设为2，则每2次输出一次传感器采样数据，即实际采样频率 = 原采样频率 / 缩小倍率
+    public static final int DefaultZoomOutRatio = 1;
+    // 传感器采样频率级别，以系统底层配置为准
+    public static final int DefaultSamplingPeriodUs = SensorManager.SENSOR_DELAY_GAME;
 
-    // 频率控制
-    private int frequency = Default_Frequency;
-
+    // 频率控制倍率
+    private int zoomOutRatio = DefaultZoomOutRatio;
     // 当前次数
     private int currTimes = 0;
 
@@ -28,6 +31,9 @@ public abstract class BaseSensor implements SensorEventListener {
     private boolean isSensorActivated = false;
 
     protected SensorManager sensorManager;
+
+    // 传感器采样频率
+    protected int samplingPeriodUs = DefaultSamplingPeriodUs;
 
     public BaseSensor() {
 
@@ -44,7 +50,7 @@ public abstract class BaseSensor implements SensorEventListener {
         }
 
         currTimes++;
-        if (currTimes % frequency == 0) {
+        if (currTimes % zoomOutRatio == 0) {
             sensorChanged(event);
             currTimes = 0;
         }
@@ -55,14 +61,18 @@ public abstract class BaseSensor implements SensorEventListener {
         accuracyChanged(sensor, accuracy);
     }
 
+    public abstract void register();
+
+    public abstract void unregister();
+
     protected abstract void activeSensor();
 
     protected abstract void sensorChanged(SensorEvent event);
 
     protected abstract void accuracyChanged(Sensor event, int accuracy);
 
-    public void setFrequency(int frequency) {
-        this.frequency = frequency;
+    public void setZoomOutRatio(int zoomOutRatio) {
+        this.zoomOutRatio = zoomOutRatio;
     }
 
     public boolean setSensorState(boolean sensorActivated) {

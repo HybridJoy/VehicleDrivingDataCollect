@@ -3,9 +3,7 @@ package com.hybrid.tripleldc.util.sensor.gyroscope;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -35,29 +33,20 @@ public class GyroSensor extends BaseSensor {
         this.gyroCallBack = gyroCallBack;
     }
 
-    /**
-     * 注册陀螺仪
-     *
-     * @return 是否支持陀螺仪功能
-     */
-    public Boolean registerGyro() {
-        isAvailable = true;
-
+    @Override
+    public void register() {
         // 注册陀螺仪
-        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
-                SensorManager.SENSOR_DELAY_GAME)) {
-            Log.i(TAG, "陀螺仪传感器可用！");
+        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE), samplingPeriodUs)) {
+            LogUtil.i(TAG, "陀螺仪传感器可用！");
+            isAvailable = true;
         } else {
-            Log.i(TAG, "陀螺仪传感器不可用！");
+            LogUtil.i(TAG, "陀螺仪传感器不可用！");
             isAvailable = false;
         }
-        return isAvailable;
     }
 
-    /**
-     * 注销陀螺仪监听器
-     */
-    public void unregisterGyro() {
+    @Override
+    public void unregister() {
         sensorManager.unregisterListener(this);
     }
 

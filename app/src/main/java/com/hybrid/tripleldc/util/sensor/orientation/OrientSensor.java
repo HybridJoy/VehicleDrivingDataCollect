@@ -4,7 +4,6 @@ import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
-import android.util.Log;
 
 import com.hybrid.tripleldc.bean.Orientation;
 import com.hybrid.tripleldc.util.io.LogUtil;
@@ -38,38 +37,29 @@ public class OrientSensor extends BaseSensor {
         this.orientCallBack = orientCallBack;
     }
 
-    /**
-     * 注册加速度传感器和地磁场传感器
-     *
-     * @return 是否支持方向功能
-     */
-    public Boolean registerOrient() {
+    @Override
+    public void register() {
         isAvailable = true;
 
         // 注册加速度传感器
-        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_GAME)) {
-            Log.i(TAG, "加速度传感器可用！");
+        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), samplingPeriodUs)) {
+            LogUtil.i(TAG, "加速度传感器可用！");
         } else {
-            Log.i(TAG, "加速度传感器不可用！");
+            LogUtil.i(TAG, "加速度传感器不可用！");
             isAvailable = false;
         }
 
         // 注册地磁场传感器
-        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-                SensorManager.SENSOR_DELAY_GAME)) {
-            Log.i(TAG, "地磁传感器可用！");
+        if (sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), samplingPeriodUs)) {
+            LogUtil.i(TAG, "地磁传感器可用！");
         } else {
-            Log.i(TAG, "地磁传感器不可用！");
+            LogUtil.i(TAG, "地磁传感器不可用！");
             isAvailable = false;
         }
-        return isAvailable;
     }
 
-    /**
-     * 注销方向监听器
-     */
-    public void unregisterOrient() {
+    @Override
+    public void unregister() {
         sensorManager.unregisterListener(this);
     }
 

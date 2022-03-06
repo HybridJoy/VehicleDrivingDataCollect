@@ -26,11 +26,20 @@ import io.realm.RealmResults;
  * Describe:
  */
 public class RealmHelper {
+    // TODO 多线程访问问题
+    
+    private static final String TAG = "RealmHelper";
 
     private Realm mRealm;
 
     private RealmHelper() {
         mRealm = Realm.getDefaultInstance();
+    }
+
+    public void close() {
+        if (mRealm != null) {
+            mRealm.close();
+        }
     }
 
     private static class RealmHelperInstance {
@@ -41,11 +50,6 @@ public class RealmHelper {
         return RealmHelperInstance.instance;
     }
 
-    public void close() {
-        if (mRealm != null) {
-            mRealm.close();
-        }
-    }
 
     public void saveInertialSequence(final InertialSequence inertialSequence, boolean sync) {
         if (sync) {

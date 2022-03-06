@@ -186,6 +186,7 @@ public class OfflineDataCollectControl implements DCService.DataChangeCallback {
                     case MsgCollectData:
                         // 保存上个时间片的数据
                         saveData();
+                        notifyUIUpdate(OfflineDataCollectControl.NotifyType.ToastMessage, "数据保存成功");
 
                         // 如果仍然在进行数据采集
                         if (isDataCollecting) {
@@ -196,6 +197,7 @@ public class OfflineDataCollectControl implements DCService.DataChangeCallback {
                     case MsgDeviceNameChange:
                         // 更新设备名
                         RealmHelper.getInstance().updateDeviceName(deviceName);
+                        notifyUIUpdate(OfflineDataCollectControl.NotifyType.ToastMessage, "设备名更改成功");
                         break;
                     default:
                         break;
