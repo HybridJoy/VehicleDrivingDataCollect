@@ -6,10 +6,12 @@ import android.location.LocationProvider;
 import android.os.Bundle;
 
 import com.hybrid.tripleldc.bean.GPSPosition;
-import com.hybrid.tripleldc.bean.GravityAcceleration;
+import com.hybrid.tripleldc.util.io.LogUtil;
+import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
-import io.realm.Realm;
+import java.util.Locale;
+
 
 /**
  * Author: Joy
@@ -21,17 +23,16 @@ import io.realm.Realm;
  * Describe:
  */
 public class GPSLocation implements LocationListener {
-    private GPSLocationListener mGpsLocationListener;
+    private static final String TAG = "GPSLocation";
+    private final GPSLocationListener mGpsLocationListener;
 
-    private int gpsPositionLatestID = -1;
+    private int gpsPositionLatestID;
 
     public GPSLocation(GPSLocationListener gpsLocationListener) {
         this.mGpsLocationListener = gpsLocationListener;
+        this.gpsPositionLatestID = RealmHelper.getInstance().getInertialSensorDataLatestID(GPSPosition.class);
 
-        Realm realm = Realm.getDefaultInstance();
-        Number gpsPositionLatestID = realm.where(GPSPosition.class).max("id");
-        this.gpsPositionLatestID = gpsPositionLatestID == null ? -1 : gpsPositionLatestID.intValue();
-        realm.close();
+        LogUtil.d(TAG, String.format(Locale.ENGLISH, "set GPS position latest id as %d", gpsPositionLatestID));
     }
 
     @Override

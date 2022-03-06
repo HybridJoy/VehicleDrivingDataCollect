@@ -1,5 +1,6 @@
 package com.hybrid.tripleldc.util.io;
 
+import com.hybrid.tripleldc.bean.Device;
 import com.hybrid.tripleldc.bean.InertialSequence;
 import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.AngularRate;
@@ -7,10 +8,12 @@ import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.bean.GravityAcceleration;
 import com.hybrid.tripleldc.bean.LinearAcceleration;
 import com.hybrid.tripleldc.bean.Orientation;
+import com.hybrid.tripleldc.config.DataConst;
 
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmModel;
 import io.realm.RealmResults;
 
 /**
@@ -105,5 +108,30 @@ public class RealmHelper {
                 linearAccelerations.deleteAllFromRealm();
             });
         }
+    }
+
+    public String getDeviceName() {
+        Device device = mRealm.where(Device.class).findFirst();
+
+        return device == null ? DataConst.System.DEFAULT_DEVICE_NAME : device.getName();
+    }
+
+    public void updateDeviceName(String name) {
+        Device device = mRealm.where(Device.class).findFirst();
+        mRealm.beginTransaction();
+        if (device == null) {
+            device = new Device();
+            device.setId(1);
+            device.setName(name);
+            mRealm.copyToRealm(device);
+        } else {
+            device.setName(name);
+        }
+        mRealm.commitTransaction();
+    }
+
+    public <T extends RealmModel> int getInertialSensorDataLatestID(Class<T> clazz) {
+        Number latestID = mRealm.where(clazz).max("id");
+        return latestID == null ? -1 : latestID.intValue();
     }
 }

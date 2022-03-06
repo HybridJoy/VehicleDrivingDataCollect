@@ -7,10 +7,12 @@ import android.hardware.SensorManager;
 import android.util.Log;
 
 import com.hybrid.tripleldc.bean.Orientation;
+import com.hybrid.tripleldc.util.io.LogUtil;
+import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
-import io.realm.Realm;
+import java.util.Locale;
 
 
 /**
@@ -73,10 +75,8 @@ public class OrientSensor extends BaseSensor {
 
     @Override
     protected void activeSensor() {
-        Realm realm = Realm.getDefaultInstance();
-        Number orientationLatestID = realm.where(Orientation.class).max("id");
-        this.orientationLatestID = orientationLatestID == null ? -1 : orientationLatestID.intValue();
-        realm.close();
+        this.orientationLatestID = RealmHelper.getInstance().getInertialSensorDataLatestID(Orientation.class);
+        LogUtil.d(TAG, String.format(Locale.ENGLISH, "set orientation latest id as %d", orientationLatestID));
     }
 
     @Override

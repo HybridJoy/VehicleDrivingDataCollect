@@ -22,7 +22,7 @@ import com.hybrid.tripleldc.util.location.GPSProviderStatus;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.sensor.acceleration.AccelerationSensor;
 import com.hybrid.tripleldc.util.sensor.acceleration.LinearAccelerationSensor;
-import com.hybrid.tripleldc.util.sensor.gravity.GravitySensor;
+import com.hybrid.tripleldc.util.sensor.acceleration.GravitySensor;
 import com.hybrid.tripleldc.util.sensor.gyroscope.GyroSensor;
 import com.hybrid.tripleldc.util.sensor.orientation.OrientSensor;
 
@@ -361,7 +361,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      * @return 返回时间片内缓存的线性加速度数据
      */
     public List<LinearAcceleration> getLinearAcceleration() {
-        LogUtil.d(TAG, "gravity acceleration size: " + linearAccelerations.size());
+        LogUtil.d(TAG, "linear acceleration size: " + linearAccelerations.size());
         return linearAccelerations;
     }
 
@@ -371,7 +371,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
      * @return 返回时间片内缓存的GPS数据
      */
     public List<GPSPosition> getGPSPosition() {
-        LogUtil.d(TAG, "GPSPosition size: " + gpsPositions.size());
+        LogUtil.d(TAG, "gps position size: " + gpsPositions.size());
         return gpsPositions;
     }
 

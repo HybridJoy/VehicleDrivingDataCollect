@@ -5,17 +5,17 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
 import android.os.Build;
-import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.AngularRate;
+import com.hybrid.tripleldc.util.io.LogUtil;
+import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
-import io.realm.Realm;
+import java.util.Locale;
 
 
 public class GyroSensor extends BaseSensor {
@@ -64,10 +64,8 @@ public class GyroSensor extends BaseSensor {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
     protected void activeSensor() {
-        Realm realm = Realm.getDefaultInstance();
-        Number angularRateLatestID = realm.where(AngularRate.class).max("id");
-        this.angularRateLatestID = angularRateLatestID == null ? -1 : angularRateLatestID.intValue();
-        realm.close();
+        this.angularRateLatestID = RealmHelper.getInstance().getInertialSensorDataLatestID(AngularRate.class);
+        LogUtil.d(TAG, String.format(Locale.ENGLISH, "set angular rate latest id as %d", angularRateLatestID));
     }
 
     @Override

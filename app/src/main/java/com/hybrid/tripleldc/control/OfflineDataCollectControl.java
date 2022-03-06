@@ -4,12 +4,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.hybrid.tripleldc.bean.InertialSequence;
 import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.AngularRate;
 import com.hybrid.tripleldc.bean.DataCollectConfig;
 import com.hybrid.tripleldc.bean.GPSPosition;
-import com.hybrid.tripleldc.config.DataConst;
+import com.hybrid.tripleldc.bean.InertialSequence;
 import com.hybrid.tripleldc.service.DCService;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.io.RealmHelper;
@@ -28,9 +27,9 @@ import org.jetbrains.annotations.Nullable;
  * Describe:
  */
 public class OfflineDataCollectControl implements DCService.DataChangeCallback {
-    private static final String TAG = "DataCollectControl";
+    private static final String TAG = "OfflineDataCollectControl";
 
-    private String deviceName = DataConst.System.DEFAULT_DEVICE_NAME;
+    private String deviceName;
 
     // DataCollect
     private DCService dataCollectService;
@@ -60,6 +59,7 @@ public class OfflineDataCollectControl implements DCService.DataChangeCallback {
     public OfflineDataCollectControl(Handler mainThreadHandler) {
         this.uiThreadHandler = mainThreadHandler;
 
+        this.deviceName = RealmHelper.getInstance().getDeviceName();
         initDataProcessHandler();
     }
 
@@ -156,6 +156,7 @@ public class OfflineDataCollectControl implements DCService.DataChangeCallback {
 
         if (!this.deviceName.equals(config.deviceName)) {
             this.deviceName = config.deviceName;
+            // 数据收集服务配置设备名
             dataCollectService.configDeviceName(deviceName);
 
             notifyUIUpdate(OfflineDataCollectControl.NotifyType.ToastMessage, "设备名改变");
@@ -193,8 +194,8 @@ public class OfflineDataCollectControl implements DCService.DataChangeCallback {
                         }
                         break;
                     case MsgDeviceNameChange:
-                        // 更新时间片ID
-                        // dataUploadService.getLatestTimeSliceID(deviceName, OfflineDataCollectControl.this);
+                        // 更新设备名
+                        RealmHelper.getInstance().updateDeviceName(deviceName);
                         break;
                     default:
                         break;

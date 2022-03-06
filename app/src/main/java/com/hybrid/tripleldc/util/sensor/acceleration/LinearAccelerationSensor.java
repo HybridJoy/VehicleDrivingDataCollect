@@ -7,10 +7,11 @@ import android.hardware.SensorManager;
 
 import com.hybrid.tripleldc.bean.LinearAcceleration;
 import com.hybrid.tripleldc.util.io.LogUtil;
+import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
-import io.realm.Realm;
+import java.util.Locale;
 
 /**
  * Author: Joy
@@ -40,10 +41,8 @@ public class LinearAccelerationSensor extends BaseSensor {
 
     @Override
     protected void activeSensor() {
-        Realm realm = Realm.getDefaultInstance();
-        Number linearAccelerationLatestID = realm.where(LinearAcceleration.class).max("id");
-        this.linearAccelerationLatestID = linearAccelerationLatestID == null ? -1: linearAccelerationLatestID.intValue();
-        realm.close();
+        this.linearAccelerationLatestID = RealmHelper.getInstance().getInertialSensorDataLatestID(LinearAcceleration.class);
+        LogUtil.d(TAG, String.format(Locale.ENGLISH, "set linear acceleration latest id as %d", linearAccelerationLatestID));
     }
 
     @Override

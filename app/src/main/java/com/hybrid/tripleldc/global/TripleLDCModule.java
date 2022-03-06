@@ -2,6 +2,7 @@ package com.hybrid.tripleldc.global;
 
 import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.AngularRate;
+import com.hybrid.tripleldc.bean.Device;
 import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.bean.GravityAcceleration;
 import com.hybrid.tripleldc.bean.LinearAcceleration;
@@ -25,7 +26,8 @@ import io.realm.annotations.RealmModule;
         Orientation.class,
         GPSPosition.class,
         GravityAcceleration.class,
-        LinearAcceleration.class
+        LinearAcceleration.class,
+        Device.class // version = 2, 新增 Device
 })
 public class TripleLDCModule {
 

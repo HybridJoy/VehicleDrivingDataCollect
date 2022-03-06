@@ -23,7 +23,7 @@ public class App extends Application {
         Realm.init(this);
         RealmConfiguration config = new RealmConfiguration.Builder()
                 .name("triple_ldc.realm")
-                .schemaVersion(1) // 数据库版本
+                .schemaVersion(2) // 数据库版本
                 .modules(new TripleLDCModule())
                 .migration(new TripleLDCMigration())
                 .build();

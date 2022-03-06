@@ -1,4 +1,4 @@
-package com.hybrid.tripleldc.util.sensor.gravity;
+package com.hybrid.tripleldc.util.sensor.acceleration;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -8,8 +8,11 @@ import android.hardware.SensorManager;
 import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.GravityAcceleration;
 import com.hybrid.tripleldc.util.io.LogUtil;
+import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.sensor.BaseSensor;
 import com.hybrid.tripleldc.util.system.DateUtil;
+
+import java.util.Locale;
 
 import io.realm.Realm;
 
@@ -42,10 +45,8 @@ public class GravitySensor extends BaseSensor {
 
     @Override
     protected void activeSensor() {
-        Realm realm = Realm.getDefaultInstance();
-        Number gravityAccelerationLatestID = realm.where(GravityAcceleration.class).max("id");
-        this.gravityAccelerationLatestID = gravityAccelerationLatestID == null ? -1 : gravityAccelerationLatestID.intValue();
-        realm.close();
+        this.gravityAccelerationLatestID = RealmHelper.getInstance().getInertialSensorDataLatestID(GravityAcceleration.class);
+        LogUtil.d(TAG, String.format(Locale.ENGLISH, "set gravity acceleration latest id as %d", gravityAccelerationLatestID));
     }
 
     @Override

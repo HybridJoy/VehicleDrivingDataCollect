@@ -8,6 +8,7 @@ import android.view.MenuItem;
 
 import com.hybrid.tripleldc.databinding.ActivityMainBinding;
 import com.hybrid.tripleldc.util.io.LogUtil;
+import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.system.AppUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
 import com.hybrid.tripleldc.view.activity.OfflineDataCollectActivity;
@@ -50,6 +51,13 @@ public class MainActivity extends BaseActivity {
         binding.mainControlArea.setOperationCallback(operationCallback);
 
         requestPermissions();
+    }
+
+    @Override
+    protected void onDestroy() {
+        // 关闭数据库连接
+        RealmHelper.getInstance().close();
+        super.onDestroy();
     }
 
     @Override
