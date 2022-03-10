@@ -4,11 +4,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.AngularRate;
 import com.hybrid.tripleldc.bean.DataCollectConfig;
 import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.bean.InertialSequence;
+import com.hybrid.tripleldc.bean.LinearAcceleration;
 import com.hybrid.tripleldc.service.DCService;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.io.RealmHelper;
@@ -72,7 +72,7 @@ public class OfflineDataCollectControl implements DCService.DataChangeCallback {
     }
 
     @Override
-    public void onAccChanged(Acceleration acceleration) {
+    public void onAccChanged(LinearAcceleration acceleration) {
         notifyUIUpdate(OfflineDataCollectControl.NotifyType.AccUpdate, acceleration.getValue());
     }
 

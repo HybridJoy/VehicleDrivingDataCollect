@@ -3,6 +3,7 @@ package com.hybrid.tripleldc.bean;
 import com.google.gson.Gson;
 import com.hybrid.tripleldc.global.App;
 import com.hybrid.tripleldc.util.io.FileIOUtil;
+import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
 import java.util.List;
@@ -108,11 +109,12 @@ public class InertialSequence {
         return success;
     }
 
+    private static final String deviceName = RealmHelper.getInstance().getDeviceName();
     private static final String fileSuffix = ".json";
     private static final String storageFolder = String.format("%s/InertialSequence", App.getInstance().getExternalFilesDir(null));
 
     private static boolean writeSensorDataToFile(String dataJson, String sensorType) {
-        String fileName = String.format("%s_%s%s", DateUtil.getCurrDateString(false), sensorType, fileSuffix);
+        String fileName = String.format("%s_%s_%s%s", DateUtil.getCurrDateString(false), deviceName, sensorType, fileSuffix);
         String filePath = String.format("%s/%s", storageFolder, fileName);
 
         return FileIOUtil.writeFileFromString(filePath, dataJson, false);

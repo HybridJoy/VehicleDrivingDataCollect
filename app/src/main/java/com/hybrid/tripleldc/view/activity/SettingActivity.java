@@ -155,6 +155,8 @@ public class SettingActivity extends BaseActivity {
         @Override
         protected void onPostExecute(Boolean result) {
             super.onPostExecute(result);
+            // 释放数据连接
+            RealmHelper.getInstance().close();
 
             Message msg = new Message();
             msg.what = MsgExportSensorDataCompleted;

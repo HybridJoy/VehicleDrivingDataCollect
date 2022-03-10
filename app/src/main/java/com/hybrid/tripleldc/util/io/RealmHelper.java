@@ -1,5 +1,7 @@
 package com.hybrid.tripleldc.util.io;
 
+import android.os.Looper;
+
 import com.hybrid.tripleldc.bean.Device;
 import com.hybrid.tripleldc.bean.InertialSequence;
 import com.hybrid.tripleldc.bean.Acceleration;
@@ -10,7 +12,12 @@ import com.hybrid.tripleldc.bean.LinearAcceleration;
 import com.hybrid.tripleldc.bean.Orientation;
 import com.hybrid.tripleldc.config.DataConst;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import android.os.Handler;
+import android.os.Message;
 
 import io.realm.Realm;
 import io.realm.RealmModel;
@@ -26,20 +33,50 @@ import io.realm.RealmResults;
  * Describe:
  */
 public class RealmHelper {
-    // TODO 多线程访问问题
-    
+
     private static final String TAG = "RealmHelper";
 
     private Realm mRealm;
+    private long currThreadID;
+
+    private List<RealmHolder> realmHolders = new ArrayList<>();
+
+    private static final int MsgCheck = 1;
+    private static final int IntervalMsgCheck = 20000;
+    private Handler handler = new Handler(Looper.getMainLooper()) {
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MsgCheck:
+                    // TODO 检测realm实例对应的线程是否存活
+                    handler.sendEmptyMessageDelayed(MsgCheck, IntervalMsgCheck);
+                default:
+                    break;
+            }
+        }
+    };
+
+    private static class RealmHolder {
+        public Realm realm;
+        public long threadID;
+
+        public RealmHolder(Realm realm, long threadID) {
+            this.realm = realm;
+            this.threadID = threadID;
+        }
+    }
 
     private RealmHelper() {
-        mRealm = Realm.getDefaultInstance();
+        // handler.sendEmptyMessageDelayed(MsgCheck, IntervalMsgCheck);
+    }
+
+    public RealmHelper reset() {
+        // 解决多线程访问问题
+        createOrFindRealm();
+        return this;
     }
 
     public void close() {
-        if (mRealm != null) {
-            mRealm.close();
-        }
+        releaseRealmInstance();
     }
 
     private static class RealmHelperInstance {
@@ -47,9 +84,40 @@ public class RealmHelper {
     }
 
     public static RealmHelper getInstance() {
-        return RealmHelperInstance.instance;
+        return RealmHelperInstance.instance.reset();
     }
 
+    private void createOrFindRealm() {
+        currThreadID = Thread.currentThread().getId();
+        LogUtil.d(TAG, String.format(Locale.ENGLISH, "curr thread id: %d", currThreadID));
+
+        // check exist
+        for (int i = 0; i < realmHolders.size(); i++) {
+            if (realmHolders.get(i).threadID == currThreadID) {
+                mRealm = realmHolders.get(i).realm;
+                LogUtil.d(TAG, String.format(Locale.ENGLISH, "found exist instance %s", mRealm));
+                return;
+            }
+        }
+
+        // create
+        mRealm = Realm.getDefaultInstance();
+        realmHolders.add(new RealmHolder(mRealm, currThreadID));
+        LogUtil.d(TAG, String.format(Locale.ENGLISH, "create new instance %s", mRealm));
+    }
+
+    private void releaseRealmInstance() {
+        long threadID = Thread.currentThread().getId();
+        for (int i = 0; i < realmHolders.size(); i++) {
+            RealmHolder realmHolder = realmHolders.get(i);
+            if(realmHolder.threadID == threadID) {
+                realmHolder.realm.close();
+                realmHolders.remove(realmHolder);
+                LogUtil.d(TAG, String.format(Locale.ENGLISH, "release instance %s", realmHolders.get(i).realm));
+                return;
+            }
+        }
+    }
 
     public void saveInertialSequence(final InertialSequence inertialSequence, boolean sync) {
         if (sync) {

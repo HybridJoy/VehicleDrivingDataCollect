@@ -4,11 +4,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.hybrid.tripleldc.bean.Acceleration;
 import com.hybrid.tripleldc.bean.DataCollectConfig;
 import com.hybrid.tripleldc.bean.GPSPosition;
 import com.hybrid.tripleldc.bean.AngularRate;
 import com.hybrid.tripleldc.bean.LaneChangeInfo;
+import com.hybrid.tripleldc.bean.LinearAcceleration;
 import com.hybrid.tripleldc.config.DataConst;
 import com.hybrid.tripleldc.config.UIConst;
 import com.hybrid.tripleldc.service.DCService;
@@ -203,7 +203,7 @@ public class DataCollectControl implements DUService.UploadCallback, DCService.D
     }
 
     @Override
-    public void onAccChanged(Acceleration acceleration) {
+    public void onAccChanged(LinearAcceleration acceleration) {
         notifyUIUpdate(NotifyType.AccUpdate, acceleration.getValue());
     }
 

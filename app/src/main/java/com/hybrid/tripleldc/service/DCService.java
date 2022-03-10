@@ -62,7 +62,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     private DataChangeCallback dataChangeCallback;
 
     public interface DataChangeCallback {
-        void onAccChanged(Acceleration acceleration);
+        void onAccChanged(LinearAcceleration acceleration);
 
         void onGyroChanged(AngularRate angularRate);
 
@@ -78,9 +78,6 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     public void Acceleration(Acceleration acceleration) {
         acceleration.setDeviceName(deviceName);
         accelerations.add(acceleration);
-        if (dataChangeCallback != null) {
-            dataChangeCallback.onAccChanged(acceleration);
-        }
     }
 
     /**
@@ -129,6 +126,9 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
     public void LinearAcceleration(LinearAcceleration acceleration) {
         acceleration.setDeviceName(deviceName);
         linearAccelerations.add(acceleration);
+        if (dataChangeCallback != null) {
+            dataChangeCallback.onAccChanged(acceleration);
+        }
     }
 
     /**

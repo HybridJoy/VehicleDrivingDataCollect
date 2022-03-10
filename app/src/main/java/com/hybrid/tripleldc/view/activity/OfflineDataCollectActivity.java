@@ -20,7 +20,6 @@ import com.hybrid.tripleldc.bean.DataCollectConfig;
 import com.hybrid.tripleldc.control.OfflineDataCollectControl;
 import com.hybrid.tripleldc.databinding.ActivityDataCollectBinding;
 import com.hybrid.tripleldc.service.DCService;
-import com.hybrid.tripleldc.service.DUService;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.system.AppUtil;
 import com.hybrid.tripleldc.util.ui.DialogUtil;
