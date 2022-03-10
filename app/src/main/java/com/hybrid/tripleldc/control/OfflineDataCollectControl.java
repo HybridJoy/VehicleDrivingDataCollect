@@ -209,6 +209,9 @@ public class OfflineDataCollectControl implements DCService.DataChangeCallback {
 
     private void checkServiceSituation() {
         if (dataCollectService != null) {
+            // 数据收集服务配置设备名
+            dataCollectService.configDeviceName(deviceName);
+            // 通知主线程
             notifyUIUpdate(OfflineDataCollectControl.NotifyType.ConfigShow, null);
         }
     }

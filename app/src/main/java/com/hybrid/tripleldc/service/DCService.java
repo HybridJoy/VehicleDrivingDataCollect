@@ -119,6 +119,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     /**
      * 线性加速度传感器更新回调
+     *
      * @param acceleration
      */
 
@@ -278,13 +279,11 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
             LogUtil.e(TAG, String.format("Data Collection start failed, please check %s%s",
                     isSensorActivated ? "" : "inertial sensors ", isGPSLocationOpened ? "" : "GPS service"));
             // 启动失败要关闭已经开启的服务
-            if (isSensorActivated) {
-                mAccelerationSensor.setSensorState(false);
-                mOrientSensor.setSensorState(false);
-                mGyroSensor.setSensorState(false);
-                mGravitySensor.setSensorState(false);
-                mLinearAccelerationSensor.setSensorState(false);
-            }
+            mAccelerationSensor.setSensorState(false);
+            mOrientSensor.setSensorState(false);
+            mGyroSensor.setSensorState(false);
+            mGravitySensor.setSensorState(false);
+            mLinearAccelerationSensor.setSensorState(false);
 
             if (isGPSLocationOpened) {
                 gpsLocationManager.stop();
@@ -358,6 +357,7 @@ public class DCService extends Service implements AccelerationSensor.Acceleratio
 
     /**
      * 获取线性加速度数据
+     *
      * @return 返回时间片内缓存的线性加速度数据
      */
     public List<LinearAcceleration> getLinearAcceleration() {
