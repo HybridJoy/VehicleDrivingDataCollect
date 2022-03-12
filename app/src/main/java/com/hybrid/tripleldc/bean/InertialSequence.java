@@ -1,12 +1,15 @@
 package com.hybrid.tripleldc.bean;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.hybrid.tripleldc.global.App;
 import com.hybrid.tripleldc.util.io.FileIOUtil;
 import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.system.DateUtil;
 
 import java.util.List;
+
+import io.realm.RealmModel;
 
 /**
  * Author: Joy
@@ -18,6 +21,8 @@ import java.util.List;
  * Describe:
  */
 public class InertialSequence {
+    private static final String TAG = "InertialSequence";
+
     private List<Acceleration> accelerations;
     private List<GravityAcceleration> gravityAccelerations;
     private List<LinearAcceleration> linearAccelerations;
@@ -89,22 +94,57 @@ public class InertialSequence {
     }
 
     public boolean writeToFile() {
-        Gson gson = new Gson();
-        // 转为json
-        String accelerationJson = gson.toJson(getAccelerations());
-        String angularRateJson = gson.toJson(getAngularRates());
-        String orientationJson = gson.toJson(getOrientations());
-        String gpsPositionJson = gson.toJson(getGpsPositions());
-        String gravityAccelerationJson = gson.toJson(getGravityAccelerations());
-        String linearAccelerationJson = gson.toJson(getLinearAccelerations());
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        // 写文件
-        boolean success = writeSensorDataToFile(accelerationJson, "Acceleration");
-        success = success && writeSensorDataToFile(angularRateJson, "AngularRate");
-        success = success && writeSensorDataToFile(orientationJson, "Orientation");
-        success = success && writeSensorDataToFile(gpsPositionJson, "GPSPosition");
-        success = success && writeSensorDataToFile(gravityAccelerationJson, "Gravity");
-        success = success && writeSensorDataToFile(linearAccelerationJson, "LinearAcceleration");
+        boolean success = splitAndWriteData(gson, getAccelerations(), "Acceleration");
+        this.accelerations.clear();
+        success = success && splitAndWriteData(gson, getAngularRates(), "AngularRate");
+        this.angularRates.clear();
+//        success = success && splitAndWriteData(gson, getOrientations(), "Orientation");
+//        this.orientations.clear();
+        success = success && splitAndWriteData(gson, getGpsPositions(), "GPSPosition");
+        this.gpsPositions.clear();
+        success = success && splitAndWriteData(gson, getGravityAccelerations(), "Gravity");
+        this.gravityAccelerations.clear();
+        success = success && splitAndWriteData(gson, getLinearAccelerations(), "LinearAcceleration");
+        this.linearAccelerations.clear();
+
+        return success;
+    }
+
+    // 单次写入的item最大数量
+    private static final int MaxFlushItemSize = 200000;
+
+    private <T extends RealmModel> boolean splitAndWriteData(Gson gson, List<T> sensorData, String sensorType) {
+        int dataSize = sensorData.size();
+        boolean firstSeg = true;
+        boolean success;
+
+        while (true) {
+            if (dataSize <= MaxFlushItemSize) {
+                String sensorDataJson = gson.toJson(sensorData);
+                // 处理开头
+                if (!firstSeg) sensorDataJson = sensorDataJson.replace("[\n  {", "\n  {");
+                // 写入文件
+                success = writeSensorDataToFile(sensorDataJson, sensorType, !firstSeg);
+                break;
+            } else {
+                // 获取此次写入的数据
+                List<T> subData = sensorData.subList(0, MaxFlushItemSize);
+                String subDataJson = gson.toJson(subData);
+                // 处理开头
+                if (!firstSeg) subDataJson = subDataJson.replace("[\n  {", "\n  {");
+                // 处理结尾
+                subDataJson = subDataJson.replace("}\n]", "},");
+                // 写入文件
+                writeSensorDataToFile(subDataJson, sensorType, !firstSeg);
+                // 移除已经写入的
+                dataSize -= MaxFlushItemSize;
+                sensorData.removeAll(subData);
+                // 控制变量更新
+                firstSeg = false;
+            }
+        }
 
         return success;
     }
@@ -113,10 +153,10 @@ public class InertialSequence {
     private static final String fileSuffix = ".json";
     private static final String storageFolder = String.format("%s/InertialSequence", App.getInstance().getExternalFilesDir(null));
 
-    private static boolean writeSensorDataToFile(String dataJson, String sensorType) {
+    private static boolean writeSensorDataToFile(String dataJson, String sensorType, boolean append) {
         String fileName = String.format("%s_%s_%s%s", DateUtil.getCurrDateString(false), deviceName, sensorType, fileSuffix);
         String filePath = String.format("%s/%s", storageFolder, fileName);
 
-        return FileIOUtil.writeFileFromString(filePath, dataJson, false);
+        return FileIOUtil.writeFileFromString(filePath, dataJson, append);
     }
 }

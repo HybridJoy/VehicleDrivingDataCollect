@@ -44,6 +44,7 @@ public class SettingActivity extends BaseActivity {
                 case MsgExportSensorDataCompleted:
                     // 恢复点击
                     binding.btnExportSensorData.setClickable(true);
+                    binding.btnCleanSensorDatabase.setClickable(true);
                     // 停止动画
                     binding.loadingExportData.stopAnim();
                     binding.loadingExportData.setVisibility(View.GONE);
@@ -59,22 +60,17 @@ public class SettingActivity extends BaseActivity {
     };
 
     private final View.OnClickListener clickListener = v -> {
-        switch (v.getId()) {
-            case R.id.btn_export_sensor_data:
-                exportData();
-                break;
-            case R.id.btn_clean_sensor_database:
-                DialogInterface.OnClickListener acceptClickListener = (dialog, which) -> {
-                    mainHandler.sendEmptyMessage(MsgCleanSensorDatabase);
-                    dialog.cancel();
-                };
-                DialogInterface.OnClickListener cancelClickListener = (dialog, which) -> {
-                    dialog.cancel();
-                };
-                DialogUtil.createDialog(this, R.string.normal_dialog_title, "确定清空传感器数据库吗？",
-                        R.string.dialog_accept, R.string.dialog_cancel, acceptClickListener, cancelClickListener).show();
-            default:
-                break;
+        int id = v.getId();
+        if (id == R.id.btn_export_sensor_data) {
+            exportData();
+        } else if (id == R.id.btn_clean_sensor_database){
+            DialogInterface.OnClickListener acceptClickListener = (dialog, which) -> {
+                mainHandler.sendEmptyMessage(MsgCleanSensorDatabase);
+                dialog.cancel();
+            };
+            DialogInterface.OnClickListener cancelClickListener = (dialog, which) -> dialog.cancel();
+            DialogUtil.createDialog(this, R.string.normal_dialog_title, "确定清空传感器数据库吗？",
+                    R.string.dialog_accept, R.string.dialog_cancel, acceptClickListener, cancelClickListener).show();
         }
     };
 
@@ -107,6 +103,7 @@ public class SettingActivity extends BaseActivity {
     private void exportData() {
         // 避免多次点击
         binding.btnExportSensorData.setClickable(false);
+        binding.btnCleanSensorDatabase.setClickable(false);
         // 加载动画
         binding.textExporting.setVisibility(View.VISIBLE);
         binding.loadingExportData.setVisibility(View.VISIBLE);
@@ -133,7 +130,7 @@ public class SettingActivity extends BaseActivity {
 
     private static class ExportDataTask extends AsyncTask<Void, Void, Boolean> {
 
-        private Handler handler;
+        private final Handler handler;
 
         public ExportDataTask(Handler handler) {
             this.handler = handler;

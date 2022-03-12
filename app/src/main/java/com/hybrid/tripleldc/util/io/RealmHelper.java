@@ -111,9 +111,10 @@ public class RealmHelper {
         for (int i = 0; i < realmHolders.size(); i++) {
             RealmHolder realmHolder = realmHolders.get(i);
             if(realmHolder.threadID == threadID) {
+                LogUtil.d(TAG, String.format(Locale.ENGLISH, "release instance %s", realmHolder.realm));
+
                 realmHolder.realm.close();
                 realmHolders.remove(realmHolder);
-                LogUtil.d(TAG, String.format(Locale.ENGLISH, "release instance %s", realmHolders.get(i).realm));
                 return;
             }
         }
