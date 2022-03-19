@@ -8,6 +8,8 @@ import java.io.IOException;
 public class FileIOUtil {
     private static final String TAG = "FileIOUtil";
 
+    private static final int BufferSize = 4 * 1024;
+
     private static File getFileByPath(final String filePath) {
         return isSpace(filePath) ? null : new File(filePath);
     }
@@ -94,7 +96,7 @@ public class FileIOUtil {
         if (!createOrExistsFile(file)) return false;
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new FileWriter(file, append));
+            bw = new BufferedWriter(new FileWriter(file, append), BufferSize);
             bw.write(content);
             return true;
         } catch (IOException e) {

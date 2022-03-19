@@ -28,7 +28,7 @@ public class MainActivity extends BaseActivity {
     private final MainControlView.OperationCallback operationCallback = new MainControlView.OperationCallback() {
         @Override
         public void onDataCollection() {
-            LogUtil.d(TAG, "enter DataCollectActivity");
+            LogUtil.d(TAG, "enter OfflineDataCollectActivity");
             startActivity(new Intent(MainActivity.this, OfflineDataCollectActivity.class));
         }
 
@@ -76,7 +76,7 @@ public class MainActivity extends BaseActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            LogUtil.d(TAG, "enter DataCollectActivity");
+            LogUtil.d(TAG, "enter SettingActivity");
             startActivity(new Intent(MainActivity.this, SettingActivity.class));
             return true;
         }

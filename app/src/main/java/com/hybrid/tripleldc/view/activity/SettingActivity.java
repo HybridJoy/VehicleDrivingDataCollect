@@ -1,7 +1,6 @@
 package com.hybrid.tripleldc.view.activity;
 
 import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,12 +9,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 
 import com.hybrid.tripleldc.R;
-import com.hybrid.tripleldc.bean.InertialSequence;
 import com.hybrid.tripleldc.databinding.ActivitySettingBinding;
+import com.hybrid.tripleldc.util.io.AsyncTaskRunner;
 import com.hybrid.tripleldc.util.io.LogUtil;
 import com.hybrid.tripleldc.util.io.RealmHelper;
+import com.hybrid.tripleldc.util.task.SensorDataExportTask;
 import com.hybrid.tripleldc.util.ui.DialogUtil;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
+
+import java.util.Locale;
 
 /**
  * Author: Joy
@@ -50,8 +52,8 @@ public class SettingActivity extends BaseActivity {
                     binding.loadingExportData.setVisibility(View.GONE);
                     binding.textExporting.setVisibility(View.GONE);
 
-                    boolean result = (Boolean) msg.obj;
-                    showTipsDialog(result ? "导出成功" : "导出失败，请检查数据后重试", !result);
+                    AsyncTaskRunner.TaskResultInfo result = (AsyncTaskRunner.TaskResultInfo) msg.obj;
+                    showTipsDialog(result.success ? String.format(Locale.CHINA, "导出成功, 耗时：%.3f秒", result.timeConsuming()) : "导出失败，请检查数据后重试", !result.success);
                 default:
                     break;
             }
@@ -63,7 +65,7 @@ public class SettingActivity extends BaseActivity {
         int id = v.getId();
         if (id == R.id.btn_export_sensor_data) {
             exportData();
-        } else if (id == R.id.btn_clean_sensor_database){
+        } else if (id == R.id.btn_clean_sensor_database) {
             DialogInterface.OnClickListener acceptClickListener = (dialog, which) -> {
                 mainHandler.sendEmptyMessage(MsgCleanSensorDatabase);
                 dialog.cancel();
@@ -110,11 +112,11 @@ public class SettingActivity extends BaseActivity {
         binding.loadingExportData.startAnim(2000);
 
         // 执行导出任务
-        new ExportDataTask(mainHandler).execute();
+        new SensorDataExportTask(mainHandler, MsgExportSensorDataCompleted, false).execute();
     }
 
     private void cleanSensorDatabase() {
-       RealmHelper.getInstance().cleanSensorDatabase(true);
+        RealmHelper.getInstance().cleanSensorDatabase(true);
     }
 
     /**
@@ -127,38 +129,4 @@ public class SettingActivity extends BaseActivity {
         DialogUtil.createDialog(this, isErrorMsg ? R.string.error_dialog_title : R.string.normal_dialog_title, msg, R.string.dialog_accept, -1).show();
     }
 
-
-    private static class ExportDataTask extends AsyncTask<Void, Void, Boolean> {
-
-        private final Handler handler;
-
-        public ExportDataTask(Handler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... arg0) {
-            // 从数据库中读取数据
-            InertialSequence inertialSequence = RealmHelper.getInstance().loadInertialSequence();
-            // 写文件
-            return inertialSequence.writeToFile();
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-            // 释放数据连接
-            RealmHelper.getInstance().close();
-
-            Message msg = new Message();
-            msg.what = MsgExportSensorDataCompleted;
-            msg.obj = result;
-            handler.sendMessageDelayed(msg, 1000);
-        }
-    }
 }
