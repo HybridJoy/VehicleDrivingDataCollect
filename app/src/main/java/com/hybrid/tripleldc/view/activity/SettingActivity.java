@@ -112,7 +112,7 @@ public class SettingActivity extends BaseActivity {
         binding.loadingExportData.startAnim(2000);
 
         // 执行导出任务
-        new SensorDataExportTask(mainHandler, MsgExportSensorDataCompleted, false).execute();
+        new SensorDataExportTask(mainHandler, MsgExportSensorDataCompleted, true).execute();
     }
 
     private void cleanSensorDatabase() {
