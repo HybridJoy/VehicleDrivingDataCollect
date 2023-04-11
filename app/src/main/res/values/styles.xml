@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="MainCustomTitleTextAppearance">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/main_title_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MainControlTextAppearance">
+        <item name="android:textColor">@color/darkslateblue</item>
+        <item name="android:textSize">@dimen/main_control_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ConfigTextAppearance">
+        <item name="android:textColor">@color/steelblue</item>
+        <item name="android:textSize">@dimen/config_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ConfigEnterAppearance">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/config_enter_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+    <style name="ConfigEditTextAppearance">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">@dimen/config_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

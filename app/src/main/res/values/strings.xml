@@ -20,11 +20,11 @@
 
 
     <!-- title -->
-    <string name="main_title">Lane-Level Localization</string>
+    <string name="main_title">Lane-Change Detection</string>
 
     <!-- main page -->
-    <string name="data_collection">Data collection</string>
-    <string name="localization">Localization</string>
+    <string name="data_collection">Data\nCollection</string>
+    <string name="localization">Tracking</string>
 
     <!-- data collect preconfig -->
     <string name="device_name">设备名称:</string>
@@ -42,6 +42,9 @@
     <string name="right_lane_changed">R-Lane Changed</string>
     <string name="lane_change_finish">Lane Change Finish</string>
 
+    <string name="data_exporting">数据导出中...</string>
+    <string name="export_dataset">导出传感器数据</string>
+    <string name="clear_dataset">清空传感器数据库</string>
 
     <!-- data collect display -->
     <string name="default_data_value">--</string>

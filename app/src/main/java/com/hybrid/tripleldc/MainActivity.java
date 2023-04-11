@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.hybrid.tripleldc.databinding.ActivityMainBinding;
 import com.hybrid.tripleldc.util.io.LogUtil;
@@ -46,6 +47,13 @@ public class MainActivity extends BaseActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
+
+        // 隐藏状态栏
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // 更改标题颜色和字体大小
+        binding.toolbar.setTitleTextColor(getResources().getColor(R.color.lightslategrey, null));
+        binding.toolbar.setTitleTextAppearance(this, R.style.MainCustomTitleTextAppearance);
 
         // init main control callback
         binding.mainControlArea.setOperationCallback(operationCallback);
