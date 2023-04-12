@@ -93,48 +93,30 @@
 ```
 ### 主要界面展示
 #### 主界面
-<div style="display:flex;">
-   <div style="margin-right: 20px">
-       <img src="./figure/home%20interface%201.jpeg" alt="home interface normal" style="width: 250px; height: auto;">
-   </div>
-   <div>
-       <img src="./figure/home%20interface%202.jpeg" alt="home interface working" style="width: 250px; height: auto;">
-   </div>
+<div>
+  <img src="./figure/home%20interface%201.jpeg" alt="home interface normal" style="width: 250px; height: auto;float:left; margin-right:20px;">
+  <img src="./figure/home%20interface%202.jpeg" alt="home interface working" style="width: 250px; height: auto;float:left;">
 </div>
 
 #### 数据收集界面
-<div style="display:flex;">
-   <div style="margin-right: 20px">
-       <img src="./figure/data%20collection%20interface%20normal.jpeg" alt="data collection interface normal" style="width: 250px; height: auto;">
-   </div>
-   <div>
-       <img src="./figure/data%20collection%20interface%20working.jpeg" alt="data collection interface working" style="width: 250px; height: auto;">
-   </div>
+<div>
+  <img src="./figure/data%20collection%20interface%20normal.jpeg" alt="data collection interface normal" style="width: 250px; height: auto;float:left; margin-right:20px;">
+  <img src="./figure/data%20collection%20interface%20working.jpeg" alt="data collection interface working" style="width: 250px; height: auto;float:left;">
 </div>
 
 #### 数据收集配置弹窗
 **注意：**
 长按数据收集界面 **Start/Collecting** Button 展示
-<div style="display:flex;">
-   <div style="margin-right: 20px">
-       <img src="./figure/data%20collection%20config%20dialog%20online.jpeg" alt="data collection config dialog online" style="width: 250px; height: auto;">
-   </div>
-   <div style="margin-right: 20px">
-       <img src="./figure/data%20collection%20config%20dialog%20offline.jpeg" alt="data collection config dialog offline" style="width: 250px; height: auto;">
-   </div>
+<div>
+  <img src="./figure/data%20collection%20config%20dialog%20online.jpeg" alt="data collection config dialog online" style="width: 250px; height: auto;float:left; margin-right:20px;">
+  <img src="./figure/data%20collection%20config%20dialog%20offline.jpeg" alt="data collection config dialog offline" style="width: 250px; height: auto;float:left;">
 </div>
 
 #### 数据导出界面
-<div style="display:flex;">
-   <div style="margin-right: 20px">
-       <img src="./figure/data%20export%20interface%20normal.jpeg" alt="data exprot interface normal" style="width: 250px; height: auto;">
-   </div>
-   <div style="margin-right: 20px">
-       <img src="./figure/data%20export%20interface%20working.jpeg" alt="data exprot interface working" style="width: 250px; height: auto;">
-   </div>
-   <div style="margin-right: 20px">
-       <img src="./figure/data%20export%20interface%20finished.jpeg" alt="data exprot interface finished" style="width: 250px; height: auto;">
-   </div>
+<div>
+  <img src="./figure/data%20export%20interface%20normal.jpeg" alt="data exprot interface normal" style="width: 250px; height: auto;float:left; margin-right:20px;">
+  <img src="./figure/data%20export%20interface%20working.jpeg" alt="data exprot interface working" style="width: 250px; height: auto;float:left; margin-right:20px;">
+  <img src="./figure/data%20export%20interface%20finished.jpeg" alt="data exprot interface finished" style="width: 250px; height: auto;float:left;">
 </div>
 
 ### 数据存储目录
