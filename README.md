@@ -120,7 +120,7 @@ private static boolean isNeedWriteLogToFile = true;
 **日志输出目录：** /sdcard/Android/data/com.hybrid.tripleldc/files/Log
 
 #### 传感器数据文件
-在数据导出界面进行导出后，保存到以下目录
+在数据导出界面进行导出后，保存到以下目录  
 **传感器数据输出目录：** /sdcard/Android/data/com.hybrid.tripleldc/files/InertialSequence
 
 ### 其他
