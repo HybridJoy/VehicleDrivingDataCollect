@@ -13,7 +13,7 @@ import com.hybrid.tripleldc.util.io.RealmHelper;
 import com.hybrid.tripleldc.util.system.AppUtil;
 import com.hybrid.tripleldc.util.ui.ToastUtil;
 import com.hybrid.tripleldc.view.activity.OfflineDataCollectActivity;
-import com.hybrid.tripleldc.view.activity.SettingActivity;
+import com.hybrid.tripleldc.view.activity.DataExportActivity;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
 import com.hybrid.tripleldc.view.widget.MainControlView;
 
@@ -84,8 +84,8 @@ public class MainActivity extends BaseActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            LogUtil.d(TAG, "enter SettingActivity");
-            startActivity(new Intent(MainActivity.this, SettingActivity.class));
+            LogUtil.d(TAG, "enter DataExportActivity");
+            startActivity(new Intent(MainActivity.this, DataExportActivity.class));
             return true;
         }
 

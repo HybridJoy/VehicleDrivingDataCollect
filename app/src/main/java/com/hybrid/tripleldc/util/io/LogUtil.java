@@ -19,7 +19,7 @@ public class LogUtil {
     private static List<String> logs = new ArrayList<>();
     private static List<String> cacheLogs = new ArrayList<>();
 
-    private static boolean isNeedWriteLogToFile = false;
+    private static boolean isNeedWriteLogToFile = true;
     private static boolean isWritingLog = false;
     private static final int writeLogLimit = 20;
 

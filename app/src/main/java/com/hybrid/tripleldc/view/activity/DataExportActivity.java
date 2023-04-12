@@ -7,6 +7,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.hybrid.tripleldc.R;
 import com.hybrid.tripleldc.databinding.ActivitySettingBinding;
@@ -18,6 +19,7 @@ import com.hybrid.tripleldc.util.ui.DialogUtil;
 import com.hybrid.tripleldc.view.activity.base.BaseActivity;
 
 import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Author: Joy
@@ -28,8 +30,8 @@ import java.util.Locale;
  * <p>
  * Describe:
  */
-public class SettingActivity extends BaseActivity {
-    private static final String TAG = "SettingActivity";
+public class DataExportActivity extends BaseActivity {
+    private static final String TAG = "DataExportActivity";
 
     private ActivitySettingBinding binding;
 
@@ -83,6 +85,12 @@ public class SettingActivity extends BaseActivity {
 
         binding = ActivitySettingBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
+
+        // 隐藏状态栏
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // 更改标题栏
+        Objects.requireNonNull(getSupportActionBar()).setTitle(R.string.data_export_title);
 
         initButtonClickListener();
     }

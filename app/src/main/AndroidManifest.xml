@@ -56,7 +56,7 @@
         </activity>
 
         <activity
-            android:name=".view.activity.SettingActivity"
+            android:name=".view.activity.DataExportActivity"
             android:launchMode="singleTask">
         </activity>
 
